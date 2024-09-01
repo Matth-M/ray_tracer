@@ -1,3 +1,5 @@
+use std::{f64, fs::File, io::Write, path::Path};
+
 #[derive(Clone)]
 struct Pixel {
     r: u8,
@@ -56,5 +58,20 @@ fn main() {
     let img = Image {
         pixels: img_content,
     };
-    println!("{}", img.to_string());
+
+    // Write image to file
+    let path = Path::new("img.ppm");
+    let display = path.display();
+
+    // Open a file in write-only mode, returns `io::Result<File>`
+    let mut file = match File::create(&path) {
+        Err(why) => panic!("couldn't create {}: {}", display, why),
+        Ok(file) => file,
+    };
+
+    // Write the `LOREM_IPSUM` string to `file`, returns `io::Result<()>`
+    match file.write_all(img.to_string().as_bytes()) {
+        Err(why) => panic!("couldn't write to {}: {}", display, why),
+        Ok(_) => {}
+    }
 }
