@@ -13,7 +13,7 @@ struct Image {
 
 impl Pixel {
     fn to_string(&self) -> String {
-        String::from(format!("{} {} {}", self.r, self.g, self.b))
+        String::from(format!("{:3} {:3} {:3}", self.r, self.g, self.b))
     }
 }
 
