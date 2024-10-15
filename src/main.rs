@@ -38,7 +38,10 @@ impl Image {
             }
             content.push_str(format!("{} \n", row_str).as_str())
         }
-        content
+        write!(f, "{}", content)
+    }
+}
+
     }
 }
 
