@@ -8,6 +8,11 @@ const PPM_MAGIC_NUMBER: &str = "P3";
 
 #[derive(Clone)]
 struct Pixel {
+    color: Color,
+}
+
+#[derive(Clone, Copy)]
+struct Color {
     r: u8,
     g: u8,
     b: u8,
