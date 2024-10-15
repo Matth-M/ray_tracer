@@ -17,14 +17,15 @@ struct Image {
     pixels: Vec<Vec<Pixel>>,
 }
 
-impl Pixel {
-    fn to_string(&self) -> String {
-        String::from(format!("{:3} {:3} {:3}", self.r, self.g, self.b))
+impl std::fmt::Display for Pixel {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let color = &self.color;
+        write!(f, "{:3} {:3} {:3}", color.r, color.g, color.b)
     }
 }
 
-impl Image {
-    fn to_string(&self) -> String {
+impl std::fmt::Display for Image {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let rows = self.pixels.len();
         let columns = self.pixels[0].len();
         let mut content = format!(
