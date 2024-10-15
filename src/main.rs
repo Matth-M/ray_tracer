@@ -1,5 +1,11 @@
 use std::{f64, fs::File, io::Write, path::Path};
 
+// Maximum value contained in an RGB channel
+const MAX_COLOR_CHANNEL_VALUE: u8 = 255;
+// P3 means the file contains a portable pixmap image written in ASCII
+// https://en.wikipedia.org/wiki/Netpbm#Description
+const PPM_MAGIC_NUMBER: &str = "P3";
+
 #[derive(Clone)]
 struct Pixel {
     r: u8,
@@ -21,7 +27,10 @@ impl Image {
     fn to_string(&self) -> String {
         let rows = self.pixels.len();
         let columns = self.pixels[0].len();
-        let mut content = format!("P3\n{} {}\n255\n", columns, rows);
+        let mut content = format!(
+            "{}\n{} {}\n{}\n",
+            PPM_MAGIC_NUMBER, columns, rows, MAX_COLOR_CHANNEL_VALUE
+        );
         for row in &self.pixels {
             let mut row_str = String::new();
             for pixel in row {
