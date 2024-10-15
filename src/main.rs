@@ -52,44 +52,41 @@ impl std::fmt::Display for Image {
 }
 
 fn main() {
+fn example_img() -> Image {
     let row1 = [
-        Pixel { r: 255, g: 0, b: 0 },
-        Pixel { r: 0, g: 255, b: 0 },
-        Pixel { r: 0, g: 0, b: 255 },
+        Pixel {
+            color: Color { r: 255, g: 0, b: 0 },
+        },
+        Pixel {
+            color: Color { r: 0, g: 255, b: 0 },
+        },
+        Pixel {
+            color: Color { r: 0, g: 0, b: 255 },
+        },
     ]
     .to_vec();
     let row2 = [
         Pixel {
-            r: 255,
-            g: 255,
-            b: 0,
+            color: Color {
+                r: 255,
+                g: 255,
+                b: 0,
+            },
         },
         Pixel {
-            r: 255,
-            g: 255,
-            b: 255,
+            color: Color {
+                r: 255,
+                g: 255,
+                b: 255,
+            },
         },
-        Pixel { r: 0, g: 0, b: 0 },
+        Pixel {
+            color: Color { r: 0, g: 0, b: 0 },
+        },
     ]
     .to_vec();
     let img_content = [row1, row2].to_vec();
-    let img = Image {
+    Image {
         pixels: img_content,
-    };
-
-    // Write image to file
-    let path = Path::new("img.ppm");
-    let display = path.display();
-
-    // Open a file in write-only mode, returns `io::Result<File>`
-    let mut file = match File::create(&path) {
-        Err(why) => panic!("couldn't create {}: {}", display, why),
-        Ok(file) => file,
-    };
-
-    // Write the `LOREM_IPSUM` string to `file`, returns `io::Result<()>`
-    match file.write_all(img.to_string().as_bytes()) {
-        Err(why) => panic!("couldn't write to {}: {}", display, why),
-        Ok(_) => {}
     }
 }
