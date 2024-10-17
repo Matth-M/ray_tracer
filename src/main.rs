@@ -85,7 +85,7 @@ impl std::fmt::Display for Image {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 struct Vec3 {
     x: f64,
     y: f64,
