@@ -94,16 +94,15 @@ struct Vec3 {
 
 impl Vec3 {
     fn len(&self) -> f64 {
-        (self.x * self.x + self.y * self.y + self.z + self.z).sqrt()
+        (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
     }
 
     fn normalized(&self) -> Vec3 {
-        let norm = self.len() * self.len();
         Vec3 {
-            x: self.x / norm,
-            y: self.y / norm,
-            z: self.z / norm,
-        }
+            x: self.x,
+            y: self.y,
+            z: self.z,
+        } / self.len()
     }
 }
 
