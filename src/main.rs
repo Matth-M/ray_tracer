@@ -253,7 +253,7 @@ fn main() {
                 direction: ray_direction,
             };
             let color = r.color();
-            row.push(Pixel { color: color });
+            row.push(Pixel { color });
         }
         pixels.push(row);
     }
