@@ -236,8 +236,8 @@ fn main() {
         x: focal_length,
         y: 0.,
         z: 0.,
-    } + viewport_u / 2.
-        + viewport_v / 2.;
+    } - viewport_u / 2.
+        - viewport_v / 2.;
     // Position of the center of the pixel at location (0,0).
     let pixel_00_loc = viewport_upper_left + 0.5 * (pixel_delta_v + pixel_delta_u);
 
