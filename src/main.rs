@@ -266,6 +266,7 @@ fn main() {
     }
 }
 
+#[allow(dead_code)]
 fn example_img() -> Image {
     let row1 = [
         Pixel {
@@ -303,6 +304,23 @@ fn example_img() -> Image {
     Image {
         pixels: img_content,
     }
+}
+
+#[allow(dead_code)]
+fn single_color_img(color: Color) -> Image {
+    let image_height = 400;
+    let image_width = 600;
+    let mut pixels = vec![];
+    pixels.reserve(image_height as usize);
+    for _ in 0..image_height {
+        let mut row: Vec<Pixel> = vec![];
+        row.reserve(image_width as usize);
+        for _ in 0..image_width {
+            row.push(Pixel { color });
+        }
+        pixels.push(row);
+    }
+    Image { pixels }
 }
 
 #[cfg(test)]
