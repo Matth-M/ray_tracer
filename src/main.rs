@@ -85,7 +85,7 @@ impl std::fmt::Display for Image {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 struct Vec3 {
     x: f64,
     y: f64,
@@ -328,7 +328,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_color_mul_f64() {
+    fn color_mul_f64() {
         let color = Color {
             r: 100,
             g: 40,
@@ -353,7 +353,7 @@ mod tests {
     }
 
     #[test]
-    fn test_color_add() {
+    fn color_add() {
         let color1 = Color {
             r: 100,
             g: 40,
@@ -386,10 +386,37 @@ mod tests {
         assert_eq!(
             color1 + color2,
             Color {
-                r: 145,
+                r: 255,
                 g: 80,
                 b: 160,
             }
         );
+    }
+
+    #[test]
+    fn vec3_normalized() {
+        let v = Vec3 {
+            x: 1.0,
+            y: 1.0,
+            z: 1.0,
+        };
+        assert_eq!(
+            v.normalized(),
+            Vec3 {
+                x: 1.0 / 3.0_f64.sqrt(),
+                y: 1.0 / 3.0_f64.sqrt(),
+                z: 1.0 / 3.0_f64.sqrt(),
+            }
+        );
+    }
+
+    #[test]
+    fn vec3_len() {
+        let v = Vec3 {
+            x: 1.0,
+            y: 1.0,
+            z: 1.0,
+        };
+        assert_eq!(v.len(), 3.0_f64.sqrt())
     }
 }
