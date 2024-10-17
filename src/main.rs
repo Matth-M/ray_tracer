@@ -104,35 +104,9 @@ impl Vec3 {
             z: self.z,
         } / self.len()
     }
-}
 
-type Position = Vec3;
-
-struct Ray {
-    origin: Position,
-    direction: Vec3,
-}
-
-impl Ray {
-    fn at(&self, t: f64) -> Position {
-        self.origin.clone() + self.direction.clone() * t
-    }
-
-    fn color(&self) -> Color {
-        let normalized = self.direction.normalized();
-        // a = 1 when y = 1.0, a = 0 when y = -1.0
-        let a = 0.5 * (normalized.y + 1.0);
-        let start_color = Color {
-            r: MAX_COLOR_CHANNEL_VALUE,
-            g: MAX_COLOR_CHANNEL_VALUE,
-            b: MAX_COLOR_CHANNEL_VALUE,
-        };
-        let end_color = Color {
-            r: (MAX_COLOR_CHANNEL_VALUE as f64 * 0.5) as u8,
-            g: (MAX_COLOR_CHANNEL_VALUE as f64 * 0.7) as u8,
-            b: (MAX_COLOR_CHANNEL_VALUE as f64 * 1.0) as u8,
-        };
-        (1.0 - a) * start_color + a * end_color
+    fn dot(&self, v: &Vec3) -> f64 {
+        self.x * v.x + self.y * v.y + self.z * v.z
     }
 }
 
@@ -202,6 +176,77 @@ impl ops::Div<f64> for Vec3 {
     }
 }
 
+type Position = Vec3;
+
+struct Ray {
+    origin: Position,
+    direction: Vec3,
+}
+
+impl Ray {
+    fn at(&self, t: f64) -> Position {
+        self.origin.clone() + self.direction.clone() * t
+    }
+
+    fn blue_lerp(&self) -> Color {
+        let normalized = self.direction.normalized();
+        // a = 1 when y = 1.0, a = 0 when y = -1.0
+        let a = 0.5 * (normalized.y + 1.0);
+        let start_color = Color {
+            r: MAX_COLOR_CHANNEL_VALUE,
+            g: MAX_COLOR_CHANNEL_VALUE,
+            b: MAX_COLOR_CHANNEL_VALUE,
+        };
+        let end_color = Color {
+            r: (MAX_COLOR_CHANNEL_VALUE as f64 * 0.5) as u8,
+            g: (MAX_COLOR_CHANNEL_VALUE as f64 * 0.7) as u8,
+            b: (MAX_COLOR_CHANNEL_VALUE as f64 * 1.0) as u8,
+        };
+        (1.0 - a) * start_color + a * end_color
+    }
+
+    fn simple_sphere(&self) -> Color {
+        if self.hits_sphere(
+            Vec3 {
+                x: 1.,
+                y: 0.,
+                z: 0.,
+            },
+            0.5,
+        ) {
+            Color {
+                r: MAX_COLOR_CHANNEL_VALUE,
+                g: 0,
+                b: 0,
+            }
+        } else {
+            let normalized = self.direction.normalized();
+            // a = 1 when y = 1.0, a = 0 when y = -1.0
+            let a = 0.5 * (normalized.y + 1.0);
+            let start_color = Color {
+                r: MAX_COLOR_CHANNEL_VALUE,
+                g: MAX_COLOR_CHANNEL_VALUE,
+                b: MAX_COLOR_CHANNEL_VALUE,
+            };
+            let end_color = Color {
+                r: (MAX_COLOR_CHANNEL_VALUE as f64 * 0.5) as u8,
+                g: (MAX_COLOR_CHANNEL_VALUE as f64 * 0.7) as u8,
+                b: (MAX_COLOR_CHANNEL_VALUE as f64 * 1.0) as u8,
+            };
+            (1.0 - a) * start_color + a * end_color
+        }
+    }
+
+    fn hits_sphere(&self, sphere_center: Vec3, radius: f64) -> bool {
+        let qc = sphere_center - self.origin; // ray origin to sphere center
+        let a = self.direction.dot(&self.direction);
+        let b = -2.0 * self.direction.dot(&qc);
+        let c = qc.dot(&qc) - radius * radius;
+        let discriminant = b * b - 4.0 * a * c;
+        discriminant >= 0.
+    }
+}
+
 fn main() {
     // Image
     let aspect_ratio = 3.0 / 2.0;
@@ -254,7 +299,7 @@ fn main() {
                 origin: camera_center,
                 direction: ray_direction,
             };
-            let color = r.color();
+            let color = r.simple_sphere();
             row.push(Pixel { color });
         }
         pixels.push(row);
