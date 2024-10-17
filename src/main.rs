@@ -12,11 +12,47 @@ struct Pixel {
     color: Color,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 struct Color {
     r: u8,
     g: u8,
     b: u8,
+}
+
+impl ops::Mul<f64> for Color {
+    type Output = Color;
+    fn mul(self, rhs: f64) -> Self::Output {
+        Color {
+            r: (self.r as f64 * rhs) as u8,
+            g: (self.g as f64 * rhs) as u8,
+            b: (self.b as f64 * rhs) as u8,
+        }
+    }
+}
+
+impl ops::Mul<Color> for f64 {
+    type Output = Color;
+    fn mul(self, rhs: Color) -> Self::Output {
+        Color {
+            r: (self * rhs.r as f64) as u8,
+            g: (self * rhs.g as f64) as u8,
+            b: (self * rhs.b as f64) as u8,
+        }
+    }
+}
+
+impl ops::Add<Color> for Color {
+    type Output = Color;
+    fn add(self, rhs: Color) -> Self::Output {
+        let (r, overflow) = self.r.overflowing_add(rhs.r);
+        let r = if overflow { MAX_COLOR_CHANNEL_VALUE } else { r };
+        let (g, overflow) = self.g.overflowing_add(rhs.g);
+        let g = if overflow { MAX_COLOR_CHANNEL_VALUE } else { g };
+        let (b, overflow) = self.b.overflowing_add(rhs.b);
+        let b = if overflow { MAX_COLOR_CHANNEL_VALUE } else { b };
+
+        Color { r, g, b }
+    }
 }
 
 struct Image {
@@ -267,5 +303,76 @@ fn example_img() -> Image {
     let img_content = [row1, row2].to_vec();
     Image {
         pixels: img_content,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_color_mul_f64() {
+        let color = Color {
+            r: 100,
+            g: 40,
+            b: 80,
+        };
+        assert_eq!(
+            color * 0.5,
+            Color {
+                r: 50,
+                g: 20,
+                b: 40
+            }
+        );
+        assert_eq!(
+            0.5 * color,
+            Color {
+                r: 50,
+                g: 20,
+                b: 40
+            }
+        );
+    }
+
+    #[test]
+    fn test_color_add() {
+        let color1 = Color {
+            r: 100,
+            g: 40,
+            b: 80,
+        };
+        let color2 = Color {
+            r: 100,
+            g: 40,
+            b: 80,
+        };
+        assert_eq!(
+            color1 + color2,
+            Color {
+                r: 200,
+                g: 80,
+                b: 160,
+            }
+        );
+
+        let color1 = Color {
+            r: 200,
+            g: 40,
+            b: 80,
+        };
+        let color2 = Color {
+            r: 200,
+            g: 40,
+            b: 80,
+        };
+        assert_eq!(
+            color1 + color2,
+            Color {
+                r: 145,
+                g: 80,
+                b: 160,
+            }
+        );
     }
 }
