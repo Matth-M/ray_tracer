@@ -243,8 +243,10 @@ fn main() {
 
     // Image content
     let mut pixels = vec![];
+    pixels.reserve(image_height as usize);
     for j in 0..image_height {
         let mut row: Vec<Pixel> = vec![];
+        row.reserve(image_width as usize);
         for i in 0..image_width {
             let pixel_center = pixel_00_loc + i * pixel_delta_u + j * pixel_delta_v;
             let ray_direction = pixel_center - camera_center;
