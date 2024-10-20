@@ -249,7 +249,7 @@ impl Ray {
         if discriminant < 0. {
             None
         } else {
-            Some(discriminant)
+            Some(-b - discriminant.sqrt() / (2. * a))
         }
     }
 }
