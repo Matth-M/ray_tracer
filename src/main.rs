@@ -207,18 +207,17 @@ impl Ray {
     }
 
     fn simple_sphere(&self) -> Color {
-        if self.hits_sphere(
-            Vec3 {
-                x: 1.,
-                y: 0.,
-                z: 0.,
-            },
-            0.5,
-        ) {
+        let sphere_center = Vec3 {
+            x: 1.,
+            y: 0.,
+            z: 0.,
+        };
+        if let Some(t) = self.hits_sphere(sphere_center, 0.5) {
+            let normal = (self.at(t) - sphere_center).normalized();
             Color {
-                r: MAX_COLOR_CHANNEL_VALUE,
-                g: 0,
-                b: 0,
+                r: (MAX_COLOR_CHANNEL_VALUE as f64 * 0.5 * (normal.x + 1.0)) as u8,
+                g: (MAX_COLOR_CHANNEL_VALUE as f64 * 0.5 * (normal.y + 1.0)) as u8,
+                b: (MAX_COLOR_CHANNEL_VALUE as f64 * 0.5 * (normal.z + 1.0)) as u8,
             }
         } else {
             self.blue_lerp()
