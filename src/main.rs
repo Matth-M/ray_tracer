@@ -188,6 +188,7 @@ impl Ray {
         self.origin + self.direction * t
     }
 
+    #[allow(dead_code)]
     fn blue_lerp(&self) -> Color {
         let normalized = self.direction.normalized();
         // a = 1 when y = 1.0, a = 0 when y = -1.0
