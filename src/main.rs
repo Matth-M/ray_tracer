@@ -185,7 +185,7 @@ struct Ray {
 
 impl Ray {
     fn at(&self, t: f64) -> Position {
-        self.origin.clone() + self.direction.clone() * t
+        self.origin + self.direction * t
     }
 
     fn blue_lerp(&self) -> Color {
