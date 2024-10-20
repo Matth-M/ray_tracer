@@ -221,20 +221,7 @@ impl Ray {
                 b: 0,
             }
         } else {
-            let normalized = self.direction.normalized();
-            // a = 1 when y = 1.0, a = 0 when y = -1.0
-            let a = 0.5 * (normalized.y + 1.0);
-            let start_color = Color {
-                r: MAX_COLOR_CHANNEL_VALUE,
-                g: MAX_COLOR_CHANNEL_VALUE,
-                b: MAX_COLOR_CHANNEL_VALUE,
-            };
-            let end_color = Color {
-                r: (MAX_COLOR_CHANNEL_VALUE as f64 * 0.5) as u8,
-                g: (MAX_COLOR_CHANNEL_VALUE as f64 * 0.7) as u8,
-                b: (MAX_COLOR_CHANNEL_VALUE as f64 * 1.0) as u8,
-            };
-            (1.0 - a) * start_color + a * end_color
+            self.blue_lerp()
         }
     }
 
