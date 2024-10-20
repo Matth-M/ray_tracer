@@ -238,13 +238,19 @@ impl Ray {
         }
     }
 
-    fn hits_sphere(&self, sphere_center: Vec3, radius: f64) -> bool {
+    /// Checks if the ray is intersecting a sphere, and where along the ray. Returns None if no
+    /// point of intersection is found
+    fn hits_sphere(&self, sphere_center: Vec3, radius: f64) -> Option<f64> {
         let qc = sphere_center - self.origin; // ray origin to sphere center
         let a = self.direction.dot(&self.direction);
         let b = -2.0 * self.direction.dot(&qc);
         let c = qc.dot(&qc) - radius * radius;
         let discriminant = b * b - 4.0 * a * c;
-        discriminant >= 0.
+        if discriminant < 0. {
+            None
+        } else {
+            Some(discriminant)
+        }
     }
 }
 
