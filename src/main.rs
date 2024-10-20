@@ -227,15 +227,22 @@ impl Ray {
     /// Checks if the ray is intersecting a sphere, and where along the ray. Returns None if no
     /// point of intersection is found
     fn hits_sphere(&self, sphere_center: Vec3, radius: f64) -> Option<f64> {
+        // Finds t for quadratic equation x(t)^2 + y(t)^2 + z(t)^2 - r^2 = 0
+        // => t^2d.d - 2td.(C-Q) + (C-Q).(C-Q) - r^2 = 0
+        // with d: direction,
+        // C: sphere center
+        // r: sphere radius
+        // Q: ray origin
         let qc = sphere_center - self.origin; // ray origin to sphere center
         let a = self.direction.dot(&self.direction);
-        let b = -2.0 * self.direction.dot(&qc);
+        // h = b / -2
+        let h = self.direction.dot(&qc);
         let c = qc.dot(&qc) - radius * radius;
-        let discriminant = b * b - 4.0 * a * c;
+        let discriminant = h * h - a * c;
         if discriminant < 0. {
             None
         } else {
-            Some(-b - discriminant.sqrt() / (2. * a))
+            Some((h - discriminant.sqrt()) / a)
         }
     }
 }
