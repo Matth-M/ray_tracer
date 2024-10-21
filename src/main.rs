@@ -247,6 +247,56 @@ impl Ray {
     }
 }
 
+#[derive(Debug, PartialEq)]
+struct Hit_Record {
+    p: Point,
+    normal: Vec3,
+    t: f64,
+}
+
+trait Hittable {
+    fn hit(&self, ray: &Ray, tmin: f64, tmax: f64) -> Option<Hit_Record>;
+}
+
+struct Sphere {
+    center: Point,
+    radius: f64,
+}
+
+impl Hittable for Sphere {
+    fn hit(&self, ray: &Ray, tmin: f64, tmax: f64) -> Option<Hit_Record> {
+        // Finds t for quadratic equation x(t)^2 + y(t)^2 + z(t)^2 - r^2 = 0
+        // => t^2d.d - 2td.(C-Q) + (C-Q).(C-Q) - r^2 = 0
+        // with d: direction,
+        // C: sphere center
+        // r: sphere radius
+        // Q: ray origin
+        let qc = self.center - ray.origin; // ray origin to sphere center
+        let a = ray.direction.dot(&ray.direction);
+        // h = b / -2
+        let h = ray.direction.dot(&qc);
+        let c = qc.dot(&qc) - self.radius * self.radius;
+        let discriminant = h * h - a * c;
+        if discriminant < 0. {
+            return None;
+        }
+
+        let discriminant_sqrt = discriminant.sqrt();
+
+        let mut root = (h - discriminant_sqrt) / a;
+        if root < tmin || root > tmax {
+            root = (h + discriminant_sqrt) / a;
+            if root < tmin || root > tmax {
+                return None;
+            }
+        }
+        let t = root;
+        let p = ray.at(root);
+        let normal = (p - self.center) / self.radius;
+        Some(Hit_Record { t, p, normal })
+    }
+}
+
 fn main() {
     // Image
     let aspect_ratio = 3.0 / 2.0;
@@ -474,5 +524,45 @@ mod tests {
             z: 1.0,
         };
         assert_eq!(v.len(), 3.0_f64.sqrt())
+    }
+
+    #[test]
+    fn hit_sphere() {
+        let sphere = Sphere {
+            radius: 1.0,
+            center: Point {
+                x: 3.,
+                y: 0.,
+                z: 0.,
+            },
+        };
+        let ray_should_hit = Ray {
+            origin: Point {
+                x: 0.,
+                y: 0.,
+                z: 0.,
+            },
+            direction: Vec3 {
+                x: 1.0,
+                y: 0.,
+                z: 0.,
+            },
+        };
+        assert_eq!(
+            sphere.hit(&ray_should_hit, 0., 100.),
+            Some(Hit_Record {
+                p: Vec3 {
+                    x: 2.,
+                    y: 0.,
+                    z: 0.
+                },
+                normal: Vec3 {
+                    x: -1.,
+                    y: 0.,
+                    z: 0.
+                },
+                t: 2.,
+            })
+        )
     }
 }
