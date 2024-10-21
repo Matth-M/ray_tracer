@@ -176,15 +176,15 @@ impl ops::Div<f64> for Vec3 {
     }
 }
 
-type Position = Vec3;
+type Point = Vec3;
 
 struct Ray {
-    origin: Position,
+    origin: Point,
     direction: Vec3,
 }
 
 impl Ray {
-    fn at(&self, t: f64) -> Position {
+    fn at(&self, t: f64) -> Point {
         self.origin + self.direction * t
     }
 
@@ -258,7 +258,7 @@ fn main() {
     let focal_length = 1.0;
     let viewport_height = 2.0;
     let viewport_width = viewport_height * (image_width / image_height) as f64;
-    let camera_center = Position {
+    let camera_center = Point {
         x: 0.,
         y: 0.,
         z: 0.,
