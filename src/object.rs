@@ -1,0 +1,286 @@
+use crate::image::{Color, MAX_COLOR_CHANNEL_VALUE};
+use std::ops;
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Vec3 {
+    pub x: f64,
+    pub y: f64,
+    pub z: f64,
+}
+
+impl Vec3 {
+    fn len(&self) -> f64 {
+        (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
+    }
+
+    fn normalized(&self) -> Vec3 {
+        Vec3 {
+            x: self.x,
+            y: self.y,
+            z: self.z,
+        } / self.len()
+    }
+
+    fn dot(&self, v: &Vec3) -> f64 {
+        self.x * v.x + self.y * v.y + self.z * v.z
+    }
+}
+
+impl ops::Mul<Vec3> for f64 {
+    type Output = Vec3;
+    fn mul(self, rhs: Vec3) -> Self::Output {
+        Vec3 {
+            x: self * rhs.x,
+            y: self * rhs.y,
+            z: self * rhs.z,
+        }
+    }
+}
+
+impl ops::Mul<Vec3> for u32 {
+    type Output = Vec3;
+    fn mul(self, rhs: Vec3) -> Self::Output {
+        Vec3 {
+            x: self as f64 * rhs.x,
+            y: self as f64 * rhs.y,
+            z: self as f64 * rhs.z,
+        }
+    }
+}
+
+impl ops::Add<Vec3> for Vec3 {
+    type Output = Vec3;
+    fn add(self, rhs: Vec3) -> Self::Output {
+        Vec3 {
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+            z: self.z + rhs.z,
+        }
+    }
+}
+
+impl ops::Sub<Vec3> for Vec3 {
+    type Output = Vec3;
+    fn sub(self, rhs: Vec3) -> Self::Output {
+        Vec3 {
+            x: self.x - rhs.x,
+            y: self.y - rhs.y,
+            z: self.z - rhs.z,
+        }
+    }
+}
+
+impl ops::Mul<f64> for Vec3 {
+    type Output = Vec3;
+    fn mul(self, rhs: f64) -> Self::Output {
+        Vec3 {
+            x: self.x * rhs,
+            y: self.y * rhs,
+            z: self.z * rhs,
+        }
+    }
+}
+
+impl ops::Div<f64> for Vec3 {
+    type Output = Vec3;
+    fn div(self, rhs: f64) -> Self::Output {
+        Vec3 {
+            x: self.x / rhs,
+            y: self.y / rhs,
+            z: self.z / rhs,
+        }
+    }
+}
+
+pub type Point = Vec3;
+
+pub struct Ray {
+    pub origin: Point,
+    pub direction: Vec3,
+}
+
+impl Ray {
+    fn at(&self, t: f64) -> Point {
+        self.origin + self.direction * t
+    }
+
+    #[allow(dead_code)]
+    fn blue_lerp(&self) -> Color {
+        let normalized = self.direction.normalized();
+        // a = 1 when y = 1.0, a = 0 when y = -1.0
+        let a = 0.5 * (normalized.y + 1.0);
+        let start_color = Color {
+            r: MAX_COLOR_CHANNEL_VALUE,
+            g: MAX_COLOR_CHANNEL_VALUE,
+            b: MAX_COLOR_CHANNEL_VALUE,
+        };
+        let end_color = Color {
+            r: (MAX_COLOR_CHANNEL_VALUE as f64 * 0.5) as u8,
+            g: (MAX_COLOR_CHANNEL_VALUE as f64 * 0.7) as u8,
+            b: (MAX_COLOR_CHANNEL_VALUE as f64 * 1.0) as u8,
+        };
+        (1.0 - a) * start_color + a * end_color
+    }
+
+    pub fn simple_sphere(&self) -> Color {
+        let sphere_center = Vec3 {
+            x: 1.,
+            y: 0.,
+            z: 0.,
+        };
+        if let Some(t) = self.hits_sphere(sphere_center, 0.5) {
+            let normal = (self.at(t) - sphere_center).normalized();
+            Color {
+                r: (MAX_COLOR_CHANNEL_VALUE as f64 * 0.5 * (normal.x + 1.0)) as u8,
+                g: (MAX_COLOR_CHANNEL_VALUE as f64 * 0.5 * (normal.y + 1.0)) as u8,
+                b: (MAX_COLOR_CHANNEL_VALUE as f64 * 0.5 * (normal.z + 1.0)) as u8,
+            }
+        } else {
+            self.blue_lerp()
+        }
+    }
+
+    /// Checks if the ray is intersecting a sphere, and where along the ray. Returns None if no
+    /// point of intersection is found
+    fn hits_sphere(&self, sphere_center: Vec3, radius: f64) -> Option<f64> {
+        // Finds t for quadratic equation x(t)^2 + y(t)^2 + z(t)^2 - r^2 = 0
+        // => t^2d.d - 2td.(C-Q) + (C-Q).(C-Q) - r^2 = 0
+        // with d: direction,
+        // C: sphere center
+        // r: sphere radius
+        // Q: ray origin
+        let qc = sphere_center - self.origin; // ray origin to sphere center
+        let a = self.direction.dot(&self.direction);
+        // h = b / -2
+        let h = self.direction.dot(&qc);
+        let c = qc.dot(&qc) - radius * radius;
+        let discriminant = h * h - a * c;
+        if discriminant < 0. {
+            None
+        } else {
+            Some((h - discriminant.sqrt()) / a)
+        }
+    }
+}
+
+#[derive(Debug, PartialEq)]
+struct HitRecord {
+    p: Point,
+    normal: Vec3,
+    t: f64,
+}
+
+trait Hittable {
+    fn hit(&self, ray: &Ray, tmin: f64, tmax: f64) -> Option<HitRecord>;
+}
+
+struct Sphere {
+    center: Point,
+    radius: f64,
+}
+
+impl Hittable for Sphere {
+    fn hit(&self, ray: &Ray, tmin: f64, tmax: f64) -> Option<HitRecord> {
+        // Finds t for quadratic equation x(t)^2 + y(t)^2 + z(t)^2 - r^2 = 0
+        // => t^2d.d - 2td.(C-Q) + (C-Q).(C-Q) - r^2 = 0
+        // with d: direction,
+        // C: sphere center
+        // r: sphere radius
+        // Q: ray origin
+        let qc = self.center - ray.origin; // ray origin to sphere center
+        let a = ray.direction.dot(&ray.direction);
+        // h = b / -2
+        let h = ray.direction.dot(&qc);
+        let c = qc.dot(&qc) - self.radius * self.radius;
+        let discriminant = h * h - a * c;
+        if discriminant < 0. {
+            return None;
+        }
+
+        let discriminant_sqrt = discriminant.sqrt();
+
+        let mut root = (h - discriminant_sqrt) / a;
+        if root < tmin || root > tmax {
+            root = (h + discriminant_sqrt) / a;
+            if root < tmin || root > tmax {
+                return None;
+            }
+        }
+        let t = root;
+        let p = ray.at(root);
+        let normal = (p - self.center) / self.radius;
+        Some(HitRecord { t, p, normal })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn vec3_normalized() {
+        let v = Vec3 {
+            x: 1.0,
+            y: 1.0,
+            z: 1.0,
+        };
+        assert_eq!(
+            v.normalized(),
+            Vec3 {
+                x: 1.0 / 3.0_f64.sqrt(),
+                y: 1.0 / 3.0_f64.sqrt(),
+                z: 1.0 / 3.0_f64.sqrt(),
+            }
+        );
+    }
+
+    #[test]
+    fn vec3_len() {
+        let v = Vec3 {
+            x: 1.0,
+            y: 1.0,
+            z: 1.0,
+        };
+        assert_eq!(v.len(), 3.0_f64.sqrt())
+    }
+
+    #[test]
+    fn hit_sphere() {
+        let sphere = Sphere {
+            radius: 1.0,
+            center: Point {
+                x: 3.,
+                y: 0.,
+                z: 0.,
+            },
+        };
+        let ray_should_hit = Ray {
+            origin: Point {
+                x: 0.,
+                y: 0.,
+                z: 0.,
+            },
+            direction: Vec3 {
+                x: 1.0,
+                y: 0.,
+                z: 0.,
+            },
+        };
+        assert_eq!(
+            sphere.hit(&ray_should_hit, 0., 100.),
+            Some(HitRecord {
+                p: Vec3 {
+                    x: 2.,
+                    y: 0.,
+                    z: 0.
+                },
+                normal: Vec3 {
+                    x: -1.,
+                    y: 0.,
+                    z: 0.
+                },
+                t: 2.,
+            })
+        )
+    }
+}
