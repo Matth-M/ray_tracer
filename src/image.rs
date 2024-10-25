@@ -105,11 +105,9 @@ impl Image {
         let pixel_00_loc = viewport_upper_left + 0.5 * (pixel_delta_v + pixel_delta_u);
 
         // Image content
-        let mut pixels = vec![];
-        pixels.reserve(image_height as usize);
+        let mut pixels = Vec::with_capacity(image_height as usize);
         for j in 0..image_height {
-            let mut row: Vec<Pixel> = vec![];
-            row.reserve(image_width as usize);
+            let mut row = Vec::with_capacity(image_width as usize);
             for i in 0..image_width {
                 let pixel_center = pixel_00_loc + i * pixel_delta_u + j * pixel_delta_v;
                 let ray_direction = pixel_center - camera_center;
@@ -138,7 +136,7 @@ impl std::fmt::Display for Image {
         for row in &self.pixels {
             let mut row_str = String::new();
             for pixel in row {
-                row_str.push_str(format!("{} ", pixel.to_string()).as_str())
+                row_str.push_str(format!("{} ", pixel).as_str())
             }
             content.push_str(format!("{} \n", row_str).as_str())
         }
@@ -190,11 +188,9 @@ fn example_img() -> Image {
 fn single_color_img(color: Color) -> Image {
     let image_height = 400;
     let image_width = 600;
-    let mut pixels = vec![];
-    pixels.reserve(image_height as usize);
+    let mut pixels = Vec::with_capacity(image_height as usize);
     for _ in 0..image_height {
-        let mut row: Vec<Pixel> = vec![];
-        row.reserve(image_width as usize);
+        let mut row = Vec::with_capacity(image_width as usize);
         for _ in 0..image_width {
             row.push(Pixel { color });
         }

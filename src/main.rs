@@ -20,8 +20,7 @@ fn main() {
     };
 
     // Write image to file
-    match file.write_all(img.to_string().as_bytes()) {
-        Err(why) => panic!("couldn't write to {}: {}", display, why),
-        Ok(_) => {}
+    if let Err(why) = file.write_all(img.to_string().as_bytes()) {
+        panic!("couldn't write to {}: {}", display, why)
     }
 }
