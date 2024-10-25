@@ -168,6 +168,13 @@ struct HitRecord {
     p: Point,
     normal: Vec3,
     t: f64,
+    front_face: bool,
+}
+
+impl HitRecord {
+    fn is_hit_from_front(ray: &Ray, outward_normal: &Vec3) -> bool {
+        ray.direction.dot(outward_normal) < 0.
+    }
 }
 
 trait Hittable {
@@ -208,8 +215,14 @@ impl Hittable for Sphere {
         }
         let t = root;
         let p = ray.at(root);
-        let normal = (p - self.center) / self.radius;
-        Some(HitRecord { t, p, normal })
+        let outward_normal = (p - self.center) / self.radius;
+        let front_face = HitRecord::is_hit_from_front(ray, &outward_normal);
+        let normal = if front_face {
+            outward_normal
+        } else {
+            -1.0 * outward_normal
+        };
+        Some(HitRecord { t, p, normal , front_face})
     }
 }
 
@@ -280,6 +293,7 @@ mod tests {
                     z: 0.
                 },
                 t: 2.,
+                front_face: true,
             })
         )
     }
