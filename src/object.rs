@@ -1,5 +1,5 @@
 use crate::image::{Color, MAX_COLOR_CHANNEL_VALUE};
-use std::ops;
+use std::{ops, rc::Rc};
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Vec3 {
@@ -222,7 +222,40 @@ impl Hittable for Sphere {
         } else {
             -1.0 * outward_normal
         };
-        Some(HitRecord { t, p, normal , front_face})
+        Some(HitRecord {
+            t,
+            p,
+            normal,
+            front_face,
+        })
+    }
+}
+
+struct HittableList<T: Hittable> {
+    objects: Vec<Rc<T>>,
+}
+
+impl<T: Hittable> HittableList<T> {
+    fn add(&mut self, object: Rc<T>) {
+        self.objects.push(object);
+    }
+
+    fn clear(&mut self) {
+        self.objects.clear();
+    }
+
+    fn hit(&self, ray: &Ray, tmin: f64, tmax: f64) -> Option<HitRecord> {
+        let mut closest_t_so_far = tmax;
+        let mut closest_hit: Option<HitRecord> = None;
+
+        for object in &self.objects {
+            if let Some(hit) = object.hit(ray, tmin, closest_t_so_far) {
+                closest_t_so_far = hit.t;
+                closest_hit = Some(hit);
+            }
+        }
+
+        closest_hit
     }
 }
 
