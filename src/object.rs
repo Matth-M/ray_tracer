@@ -121,46 +121,6 @@ impl Ray {
         (1.0 - a) * start_color + a * end_color
     }
 
-    pub fn simple_sphere(&self) -> Color {
-        let sphere_center = Vec3 {
-            x: 1.,
-            y: 0.,
-            z: 0.,
-        };
-        if let Some(t) = self.hits_sphere(sphere_center, 0.5) {
-            let normal = (self.at(t) - sphere_center).normalized();
-            Color {
-                r: (MAX_COLOR_CHANNEL_VALUE as f64 * 0.5 * (normal.x + 1.0)) as u8,
-                g: (MAX_COLOR_CHANNEL_VALUE as f64 * 0.5 * (normal.y + 1.0)) as u8,
-                b: (MAX_COLOR_CHANNEL_VALUE as f64 * 0.5 * (normal.z + 1.0)) as u8,
-            }
-        } else {
-            self.blue_lerp()
-        }
-    }
-
-    /// Checks if the ray is intersecting a sphere, and where along the ray. Returns None if no
-    /// point of intersection is found
-    fn hits_sphere(&self, sphere_center: Vec3, radius: f64) -> Option<f64> {
-        // Finds t for quadratic equation x(t)^2 + y(t)^2 + z(t)^2 - r^2 = 0
-        // => t^2d.d - 2td.(C-Q) + (C-Q).(C-Q) - r^2 = 0
-        // with d: direction,
-        // C: sphere center
-        // r: sphere radius
-        // Q: ray origin
-        let qc = sphere_center - self.origin; // ray origin to sphere center
-        let a = self.direction.dot(&self.direction);
-        // h = b / -2
-        let h = self.direction.dot(&qc);
-        let c = qc.dot(&qc) - radius * radius;
-        let discriminant = h * h - a * c;
-        if discriminant < 0. {
-            None
-        } else {
-            Some((h - discriminant.sqrt()) / a)
-        }
-    }
-
     pub fn color<T: Hittable>(&self, world: &HittableList<T>) -> Color {
         if let Some(hit) = world.hit(&self, 0., INFINITY) {
             0.5 * (Color {
@@ -255,9 +215,6 @@ impl<T: Hittable> HittableList<T> {
         self.objects.push(object);
     }
 
-    fn clear(&mut self) {
-        self.objects.clear();
-    }
 
     fn hit(&self, ray: &Ray, tmin: f64, tmax: f64) -> Option<HitRecord> {
         let mut closest_t_so_far = tmax;
