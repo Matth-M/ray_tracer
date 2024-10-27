@@ -1,6 +1,6 @@
 use std::ops;
 
-use crate::object::{Point, Ray, Vec3};
+use crate::object::{Point, Ray, Vec3, HittableList, Hittable};
 
 // Maximum value contained in an RGB channel
 pub const MAX_COLOR_CHANNEL_VALUE: u8 = 255;
@@ -68,7 +68,7 @@ pub struct Image {
 }
 
 impl Image {
-    pub fn new(aspect_ratio: f64, image_width: u32) -> Image {
+    pub fn new<T: Hittable>(aspect_ratio: f64, image_width: u32, world: &HittableList<T>) -> Image {
         let image_height = (image_width as f64 / aspect_ratio) as u32;
         let image_height = if image_height < 1 { 1 } else { image_height };
 
@@ -115,7 +115,7 @@ impl Image {
                     origin: camera_center,
                     direction: ray_direction,
                 };
-                let color = r.simple_sphere();
+                let color = r.color(world);
                 row.push(Pixel { color });
             }
             pixels.push(row);

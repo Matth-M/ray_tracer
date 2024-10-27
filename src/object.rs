@@ -1,5 +1,5 @@
 use crate::image::{Color, MAX_COLOR_CHANNEL_VALUE};
-use std::{ops, rc::Rc};
+use std::{f64::INFINITY, ops, rc::Rc};
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Vec3 {
@@ -104,7 +104,6 @@ impl Ray {
         self.origin + self.direction * t
     }
 
-    #[allow(dead_code)]
     fn blue_lerp(&self) -> Color {
         let normalized = self.direction.normalized();
         // a = 1 when y = 1.0, a = 0 when y = -1.0
@@ -161,10 +160,26 @@ impl Ray {
             Some((h - discriminant.sqrt()) / a)
         }
     }
+
+    pub fn color<T: Hittable>(&self, world: &HittableList<T>) -> Color {
+        if let Some(hit) = world.hit(&self, 0., INFINITY) {
+            0.5 * (Color {
+                r: (hit.normal.x * MAX_COLOR_CHANNEL_VALUE as f64) as u8,
+                g: (hit.normal.y * MAX_COLOR_CHANNEL_VALUE as f64) as u8,
+                b: (hit.normal.z * MAX_COLOR_CHANNEL_VALUE as f64) as u8,
+            } + Color {
+                r: MAX_COLOR_CHANNEL_VALUE,
+                g: MAX_COLOR_CHANNEL_VALUE,
+                b: MAX_COLOR_CHANNEL_VALUE,
+            })
+        } else {
+            self.blue_lerp()
+        }
+    }
 }
 
 #[derive(Debug, PartialEq)]
-struct HitRecord {
+pub struct HitRecord {
     p: Point,
     normal: Vec3,
     t: f64,
@@ -177,13 +192,13 @@ impl HitRecord {
     }
 }
 
-trait Hittable {
+pub trait Hittable {
     fn hit(&self, ray: &Ray, tmin: f64, tmax: f64) -> Option<HitRecord>;
 }
 
-struct Sphere {
-    center: Point,
-    radius: f64,
+pub struct Sphere {
+    pub center: Point,
+    pub radius: f64,
 }
 
 impl Hittable for Sphere {
@@ -231,12 +246,12 @@ impl Hittable for Sphere {
     }
 }
 
-struct HittableList<T: Hittable> {
-    objects: Vec<Rc<T>>,
+pub struct HittableList<T: Hittable> {
+    pub objects: Vec<Rc<T>>,
 }
 
 impl<T: Hittable> HittableList<T> {
-    fn add(&mut self, object: Rc<T>) {
+    pub fn add(&mut self, object: Rc<T>) {
         self.objects.push(object);
     }
 

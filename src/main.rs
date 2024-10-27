@@ -1,15 +1,35 @@
-use std::{fs::File, io::Write, path::Path};
+use std::{fs::File, io::Write, path::Path, rc::Rc};
 
 mod image;
 use image::Image;
 
 mod object;
+use object::{HittableList, Point, Sphere};
 
 fn main() {
+    let objects = vec![Rc::new(Sphere {
+        center: Point {
+            x: 1.,
+            y: 0.,
+            z: 0.,
+        },
+        radius: 0.5,
+    })];
+
+    let mut world = HittableList { objects };
+    world.add(Rc::new(Sphere {
+        center: Point {
+            x: 1.,
+            y: -100.5,
+            z: 0.,
+        },
+        radius: 0.5,
+    }));
+
     // Image
     let aspect_ratio = 3.0 / 2.0;
-    let image_width = 500;
-    let img = Image::new(aspect_ratio, image_width);
+    let image_width = 50;
+    let img = Image::new(aspect_ratio, image_width, &world);
 
     // Create output file
     let path = Path::new("img.ppm");
