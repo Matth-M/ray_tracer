@@ -23,7 +23,7 @@ fn main() {
             y: -100.5,
             z: 0.,
         },
-        radius: 0.5,
+        radius: 100.,
     }));
 
     // Image
