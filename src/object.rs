@@ -1,5 +1,5 @@
 use crate::image::{Color, MAX_COLOR_CHANNEL_VALUE};
-use std::{f64::INFINITY, ops, rc::Rc};
+use std::{ops, rc::Rc};
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Vec3 {
@@ -209,7 +209,6 @@ impl<T: Hittable> HittableList<T> {
     pub fn add(&mut self, object: Rc<T>) {
         self.objects.push(object);
     }
-
 
     fn hit(&self, ray: &Ray, tmin: f64, tmax: f64) -> Option<HitRecord> {
         let mut closest_t_so_far = tmax;

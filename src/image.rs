@@ -1,6 +1,6 @@
 use std::ops;
 
-use crate::object::{Point, Ray, Vec3, HittableList, Hittable};
+use crate::object::{Hittable, HittableList, Point, Ray, Vec3};
 
 // Maximum value contained in an RGB channel
 pub const MAX_COLOR_CHANNEL_VALUE: u8 = 255;
