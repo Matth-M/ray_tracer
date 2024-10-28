@@ -7,4 +7,4 @@ Following [Ray tracing in a weekend tutorial](https://raytracing.github.io/books
 cargo run
 ```
 
-Creates a `img.ppm` in current working directory.
+Creates a `img.ppm` in current working directory: [PPM format](https://en.wikipedia.org/wiki/Netpbm)
