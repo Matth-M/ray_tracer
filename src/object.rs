@@ -122,16 +122,11 @@ impl Ray {
     }
 
     pub fn color<T: Hittable>(&self, world: &HittableList<T>) -> Color {
-        if let Some(hit) = world.hit(&self, 0., INFINITY) {
-            0.5 * (Color {
-                r: (hit.normal.x * MAX_COLOR_CHANNEL_VALUE as f64) as u8,
-                g: (hit.normal.y * MAX_COLOR_CHANNEL_VALUE as f64) as u8,
-                b: (hit.normal.z * MAX_COLOR_CHANNEL_VALUE as f64) as u8,
-            } + Color {
-                r: MAX_COLOR_CHANNEL_VALUE,
-                g: MAX_COLOR_CHANNEL_VALUE,
-                b: MAX_COLOR_CHANNEL_VALUE,
-            })
+        if let Some(hit) = world.hit(self, 0., f64::INFINITY) {
+            let r = (0.5 * (hit.normal.x + 1.0) * MAX_COLOR_CHANNEL_VALUE as f64) as u8;
+            let g = (0.5 * (hit.normal.y + 1.0) * MAX_COLOR_CHANNEL_VALUE as f64) as u8;
+            let b = (0.5 * (hit.normal.z + 1.0) * MAX_COLOR_CHANNEL_VALUE as f64) as u8;
+            Color { r, g, b }
         } else {
             self.blue_lerp()
         }
