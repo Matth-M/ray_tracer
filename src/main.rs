@@ -28,7 +28,7 @@ fn main() {
 
     // Image
     let aspect_ratio = 3.0 / 2.0;
-    let image_width = 50;
+    let image_width = 500;
     let img = Image::new(aspect_ratio, image_width, &world);
 
     // Create output file
