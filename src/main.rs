@@ -5,7 +5,7 @@ mod image;
 use image::Camera;
 
 mod object;
-use object::{HittableList, Point, Sphere};
+use object::{World, Point, Sphere};
 
 fn main() {
     let objects = vec![Rc::new(Sphere {
@@ -17,7 +17,7 @@ fn main() {
         radius: 0.5,
     })];
 
-    let mut world = HittableList { objects };
+    let mut world = World { objects };
     world.add(Rc::new(Sphere {
         center: Point {
             x: 1.,

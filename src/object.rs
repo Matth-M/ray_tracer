@@ -193,11 +193,11 @@ impl Hittable for Sphere {
     }
 }
 
-pub struct HittableList<T: Hittable> {
+pub struct World<T: Hittable> {
     pub objects: Vec<Rc<T>>,
 }
 
-impl<T: Hittable> HittableList<T> {
+impl<T: Hittable> World<T> {
     pub fn add(&mut self, object: Rc<T>) {
         self.objects.push(object);
     }
