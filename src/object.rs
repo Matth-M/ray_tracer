@@ -1,6 +1,8 @@
 use crate::image::{Color, MAX_COLOR_CHANNEL_VALUE};
 use std::{ops, rc::Rc};
 
+use crate::utils::Interval;
+
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Vec3 {
     pub x: f64,
@@ -121,7 +123,6 @@ impl Ray {
         };
         (1.0 - a) * start_color + a * end_color
     }
-
 }
 
 #[derive(Debug, PartialEq)]
@@ -139,7 +140,7 @@ impl HitRecord {
 }
 
 pub trait Hittable {
-    fn hit(&self, ray: &Ray, tmin: f64, tmax: f64) -> Option<HitRecord>;
+    fn hit(&self, ray: &Ray, interval: Interval) -> Option<HitRecord>;
 }
 
 pub struct Sphere {
@@ -148,7 +149,7 @@ pub struct Sphere {
 }
 
 impl Hittable for Sphere {
-    fn hit(&self, ray: &Ray, tmin: f64, tmax: f64) -> Option<HitRecord> {
+    fn hit(&self, ray: &Ray, interval: Interval) -> Option<HitRecord> {
         // Finds t for quadratic equation x(t)^2 + y(t)^2 + z(t)^2 - r^2 = 0
         // => t^2d.d - 2td.(C-Q) + (C-Q).(C-Q) - r^2 = 0
         // with d: direction,
@@ -168,9 +169,9 @@ impl Hittable for Sphere {
         let discriminant_sqrt = discriminant.sqrt();
 
         let mut root = (h - discriminant_sqrt) / a;
-        if root < tmin || root > tmax {
+        if !interval.contains(root) {
             root = (h + discriminant_sqrt) / a;
-            if root < tmin || root > tmax {
+            if !interval.contains(root) {
                 return None;
             }
         }
@@ -201,13 +202,12 @@ impl<T: Hittable> HittableList<T> {
         self.objects.push(object);
     }
 
-    pub fn hit(&self, ray: &Ray, tmin: f64, tmax: f64) -> Option<HitRecord> {
-        let mut closest_t_so_far = tmax;
+    pub fn hit(&self, ray: &Ray, mut interval: Interval) -> Option<HitRecord> {
         let mut closest_hit: Option<HitRecord> = None;
 
         for object in &self.objects {
-            if let Some(hit) = object.hit(ray, tmin, closest_t_so_far) {
-                closest_t_so_far = hit.t;
+            if let Some(hit) = object.hit(ray, interval) {
+                interval.max = hit.t;
                 closest_hit = Some(hit);
             }
         }
@@ -270,7 +270,7 @@ mod tests {
             },
         };
         assert_eq!(
-            sphere.hit(&ray_should_hit, 0., 100.),
+            sphere.hit(&ray_should_hit, Interval { min: 0., max: 100. }),
             Some(HitRecord {
                 p: Vec3 {
                     x: 2.,

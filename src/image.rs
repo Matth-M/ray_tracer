@@ -1,6 +1,7 @@
 use std::ops;
 
 use crate::object::{Hittable, HittableList, Point, Ray, Vec3};
+use crate::utils::Interval;
 
 // Maximum value contained in an RGB channel
 pub const MAX_COLOR_CHANNEL_VALUE: u8 = 255;
@@ -78,7 +79,7 @@ pub struct Camera {
 
 impl Camera {
     fn ray_color<T: Hittable>(ray: &Ray, world: &HittableList<T>) -> Color {
-        if let Some(hit) = world.hit(ray, 0., f64::INFINITY) {
+        if let Some(hit) = world.hit(ray, Interval{min:0.,max:f64::INFINITY}) {
             let r = (0.5 * (hit.normal.x + 1.0) * MAX_COLOR_CHANNEL_VALUE as f64) as u8;
             let g = (0.5 * (hit.normal.y + 1.0) * MAX_COLOR_CHANNEL_VALUE as f64) as u8;
             let b = (0.5 * (hit.normal.z + 1.0) * MAX_COLOR_CHANNEL_VALUE as f64) as u8;

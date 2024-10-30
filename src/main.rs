@@ -1,5 +1,6 @@
 use std::{fs::File, io::Write, path::Path, rc::Rc};
 
+mod utils;
 mod image;
 use image::Camera;
 
