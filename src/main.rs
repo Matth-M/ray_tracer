@@ -1,11 +1,11 @@
 use std::{fs::File, io::Write, path::Path, rc::Rc};
 
-mod utils;
 mod image;
+mod utils;
 use image::Camera;
 
 mod object;
-use object::{World, Point, Sphere};
+use object::{Point, Sphere, World};
 
 fn main() {
     let objects = vec![Rc::new(Sphere {

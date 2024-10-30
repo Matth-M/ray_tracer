@@ -1,6 +1,6 @@
 use std::ops;
 
-use crate::object::{Hittable, World, Point, Ray, Vec3};
+use crate::object::{Hittable, Point, Ray, Vec3, World};
 use crate::utils::Interval;
 
 // Maximum value contained in an RGB channel
@@ -79,7 +79,13 @@ pub struct Camera {
 
 impl Camera {
     fn ray_color<T: Hittable>(ray: &Ray, world: &World<T>) -> Color {
-        if let Some(hit) = world.hit(ray, Interval{min:0.,max:f64::INFINITY}) {
+        if let Some(hit) = world.hit(
+            ray,
+            Interval {
+                min: 0.,
+                max: f64::INFINITY,
+            },
+        ) {
             let r = (0.5 * (hit.normal.x + 1.0) * MAX_COLOR_CHANNEL_VALUE as f64) as u8;
             let g = (0.5 * (hit.normal.y + 1.0) * MAX_COLOR_CHANNEL_VALUE as f64) as u8;
             let b = (0.5 * (hit.normal.z + 1.0) * MAX_COLOR_CHANNEL_VALUE as f64) as u8;
@@ -162,16 +168,14 @@ impl std::fmt::Display for Image {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let rows = self.pixels.len();
         let columns = self.pixels[0].len();
-        let mut content = format!(
-            "{}\n{} {}\n{}\n",
-            PPM_MAGIC_NUMBER, columns, rows, MAX_COLOR_CHANNEL_VALUE
-        );
+        let mut content =
+            format!("{PPM_MAGIC_NUMBER}\n{columns} {rows}\n{MAX_COLOR_CHANNEL_VALUE}\n");
         for row in &self.pixels {
             let mut row_str = String::new();
             for pixel in row {
-                row_str.push_str(format!("{} ", pixel).as_str())
+                row_str.push_str(format!("{pixel} ").as_str())
             }
-            content.push_str(format!("{} \n", row_str).as_str())
+            content.push_str(format!("{row_str} \n").as_str())
         }
         write!(f, "{}", content)
     }
