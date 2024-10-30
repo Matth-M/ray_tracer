@@ -105,8 +105,8 @@ impl Ray {
     }
 
     /// Background, blue gradient based on y coordinates.
-    fn blue_lerp(&self) -> Color {
-        let normalized = self.direction.normalized();
+    pub fn blue_lerp(ray: &Ray) -> Color {
+        let normalized = ray.direction.normalized();
         // a = 1 when y = 1.0, a = 0 when y = -1.0
         let a = 0.5 * (normalized.y + 1.0);
         let start_color = Color {
@@ -122,22 +122,12 @@ impl Ray {
         (1.0 - a) * start_color + a * end_color
     }
 
-    pub fn color<T: Hittable>(&self, world: &HittableList<T>) -> Color {
-        if let Some(hit) = world.hit(self, 0., f64::INFINITY) {
-            let r = (0.5 * (hit.normal.x + 1.0) * MAX_COLOR_CHANNEL_VALUE as f64) as u8;
-            let g = (0.5 * (hit.normal.y + 1.0) * MAX_COLOR_CHANNEL_VALUE as f64) as u8;
-            let b = (0.5 * (hit.normal.z + 1.0) * MAX_COLOR_CHANNEL_VALUE as f64) as u8;
-            Color { r, g, b }
-        } else {
-            self.blue_lerp()
-        }
-    }
 }
 
 #[derive(Debug, PartialEq)]
 pub struct HitRecord {
     p: Point,
-    normal: Vec3,
+    pub normal: Vec3,
     t: f64,
     front_face: bool,
 }
@@ -211,7 +201,7 @@ impl<T: Hittable> HittableList<T> {
         self.objects.push(object);
     }
 
-    fn hit(&self, ray: &Ray, tmin: f64, tmax: f64) -> Option<HitRecord> {
+    pub fn hit(&self, ray: &Ray, tmin: f64, tmax: f64) -> Option<HitRecord> {
         let mut closest_t_so_far = tmax;
         let mut closest_hit: Option<HitRecord> = None;
 

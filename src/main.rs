@@ -1,7 +1,7 @@
 use std::{fs::File, io::Write, path::Path, rc::Rc};
 
 mod image;
-use image::Image;
+use image::Camera;
 
 mod object;
 use object::{HittableList, Point, Sphere};
@@ -26,10 +26,11 @@ fn main() {
         radius: 100.,
     }));
 
-    // Image
+    // camera
     let aspect_ratio = 3.0 / 2.0;
     let image_width = 500;
-    let img = Image::new(aspect_ratio, image_width, &world);
+    let camera = Camera::initialize(aspect_ratio, image_width);
+    let image = camera.render(&world);
 
     // Create output file
     let path = Path::new("img.ppm");
@@ -40,7 +41,7 @@ fn main() {
     };
 
     // Write image to file
-    if let Err(why) = file.write_all(img.to_string().as_bytes()) {
+    if let Err(why) = file.write_all(image.to_string().as_bytes()) {
         panic!("couldn't write to {}: {}", display, why)
     }
 }

@@ -67,8 +67,28 @@ pub struct Image {
     pixels: Vec<Vec<Pixel>>,
 }
 
-impl Image {
-    pub fn new<T: Hittable>(aspect_ratio: f64, image_width: u32, world: &HittableList<T>) -> Image {
+pub struct Camera {
+    image_width: u32,
+    image_height: u32,
+    pixel_00_loc: Vec3,
+    pixel_delta_u: Vec3,
+    pixel_delta_v: Vec3,
+    center: Point,
+}
+
+impl Camera {
+    fn ray_color<T: Hittable>(ray: &Ray, world: &HittableList<T>) -> Color {
+        if let Some(hit) = world.hit(ray, 0., f64::INFINITY) {
+            let r = (0.5 * (hit.normal.x + 1.0) * MAX_COLOR_CHANNEL_VALUE as f64) as u8;
+            let g = (0.5 * (hit.normal.y + 1.0) * MAX_COLOR_CHANNEL_VALUE as f64) as u8;
+            let b = (0.5 * (hit.normal.z + 1.0) * MAX_COLOR_CHANNEL_VALUE as f64) as u8;
+            Color { r, g, b }
+        } else {
+            Ray::blue_lerp(ray)
+        }
+    }
+
+    pub fn initialize(aspect_ratio: f64, image_width: u32) -> Camera {
         let image_height = (image_width as f64 / aspect_ratio) as u32;
         let image_height = if image_height < 1 { 1 } else { image_height };
 
@@ -104,18 +124,30 @@ impl Image {
         // Position of the center of the pixel at location (0,0).
         let pixel_00_loc = viewport_upper_left + 0.5 * (pixel_delta_v + pixel_delta_u);
 
+        Camera {
+            image_width,
+            image_height,
+            pixel_00_loc,
+            pixel_delta_u,
+            pixel_delta_v,
+            center: camera_center,
+        }
+    }
+
+    pub fn render<T: Hittable>(&self, world: &HittableList<T>) -> Image {
         // Image content
-        let mut pixels = Vec::with_capacity(image_height as usize);
-        for j in 0..image_height {
-            let mut row = Vec::with_capacity(image_width as usize);
-            for i in 0..image_width {
-                let pixel_center = pixel_00_loc + i * pixel_delta_u + j * pixel_delta_v;
-                let ray_direction = pixel_center - camera_center;
+        let mut pixels = Vec::with_capacity(self.image_height as usize);
+        for j in 0..self.image_height {
+            let mut row = Vec::with_capacity(self.image_width as usize);
+            for i in 0..self.image_width {
+                let pixel_center =
+                    self.pixel_00_loc + i * self.pixel_delta_u + j * self.pixel_delta_v;
+                let ray_direction = pixel_center - self.center;
                 let r = Ray {
-                    origin: camera_center,
+                    origin: self.center,
                     direction: ray_direction,
                 };
-                let color = r.color(world);
+                let color = Camera::ray_color(&r, world);
                 row.push(Pixel { color });
             }
             pixels.push(row);
