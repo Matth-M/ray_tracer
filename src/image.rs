@@ -16,6 +16,12 @@ pub struct Color {
     pub b: u8,
 }
 
+impl Color {
+    fn blend(&self, other: &Color) -> Color {
+        (*self + *other) * 0.5
+    }
+}
+
 impl ops::Mul<f64> for Color {
     type Output = Color;
     fn mul(self, rhs: f64) -> Self::Output {
@@ -47,7 +53,6 @@ impl ops::Add<Color> for Color {
         let g = if overflow { MAX_COLOR_CHANNEL_VALUE } else { g };
         let (b, overflow) = self.b.overflowing_add(rhs.b);
         let b = if overflow { MAX_COLOR_CHANNEL_VALUE } else { b };
-
         Color { r, g, b }
     }
 }
@@ -75,6 +80,7 @@ pub struct Camera {
     pixel_delta_u: Vec3,
     pixel_delta_v: Vec3,
     center: Point,
+    sample_per_pixel: u32,
 }
 
 impl Camera {
@@ -95,7 +101,7 @@ impl Camera {
         }
     }
 
-    pub fn initialize(aspect_ratio: f64, image_width: u32) -> Camera {
+    pub fn initialize(aspect_ratio: f64, image_width: u32, sample_per_pixel: u32) -> Camera {
         let image_height = (image_width as f64 / aspect_ratio) as u32;
         let image_height = if image_height < 1 { 1 } else { image_height };
 
@@ -132,6 +138,7 @@ impl Camera {
         let pixel_00_loc = viewport_upper_left + 0.5 * (pixel_delta_v + pixel_delta_u);
 
         Camera {
+            sample_per_pixel,
             image_width,
             image_height,
             pixel_00_loc,
@@ -147,20 +154,38 @@ impl Camera {
         for j in 0..self.image_height {
             let mut row = Vec::with_capacity(self.image_width as usize);
             for i in 0..self.image_width {
-                let pixel_center =
-                    self.pixel_00_loc + i * self.pixel_delta_u + j * self.pixel_delta_v;
-                let ray_direction = pixel_center - self.center;
-                let r = Ray {
-                    origin: self.center,
-                    direction: ray_direction,
-                };
-                let color = Camera::ray_color(&r, world);
+                let mut color = Color { r: 0, g: 0, b: 0 };
+                for _ in 0..self.sample_per_pixel {
+                    let ray = self.get_ray(j as usize, i as usize);
+                    color = color.blend(&Camera::ray_color(&ray, world))
+                }
                 row.push(Pixel { color });
             }
             pixels.push(row);
         }
 
         Image { pixels }
+    }
+    // Construct a camera ray originating from the origin and directed at randomly sampled
+    // point around the pixel location i, j.
+    fn get_ray(&self, row: usize, column: usize) -> Ray {
+        let offset = Camera::sample_square();
+        let pixel_sample = self.pixel_00_loc
+            + (column as f64 + offset.z) * self.pixel_delta_u
+            + (row as f64 + offset.y) * self.pixel_delta_v;
+        let origin = self.center;
+        let direction = pixel_sample - origin;
+
+        Ray { origin, direction }
+    }
+
+    // Returns the vector to a random point in the [-.5,-.5]-[+.5,+.5] unit square.
+    fn sample_square() -> Vec3 {
+        Vec3 {
+            x: 0.,
+            y: rand::random::<f64>() - 0.5,
+            z: rand::random::<f64>() - 0.5,
+        }
     }
 }
 

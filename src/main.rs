@@ -8,29 +8,32 @@ mod object;
 use object::{Point, Sphere, World};
 
 fn main() {
-    let objects = vec![Rc::new(Sphere {
-        center: Point {
-            x: 1.,
-            y: 0.,
-            z: 0.,
-        },
-        radius: 0.5,
-    })];
+    let objects = vec![
+        Rc::new(Sphere {
+            center: Point {
+                x: 1.,
+                y: 0.,
+                z: 0.,
+            },
+            radius: 0.5,
+        }),
+        Rc::new(Sphere {
+            center: Point {
+                x: 1.,
+                y: -100.5,
+                z: 0.,
+            },
+            radius: 100.,
+        }),
+    ];
 
-    let mut world = World { objects };
-    world.add(Rc::new(Sphere {
-        center: Point {
-            x: 1.,
-            y: -100.5,
-            z: 0.,
-        },
-        radius: 100.,
-    }));
+    let world = World { objects };
 
     // camera
     let aspect_ratio = 3.0 / 2.0;
     let image_width = 500;
-    let camera = Camera::initialize(aspect_ratio, image_width);
+    let sample_per_pixel = 10;
+    let camera = Camera::initialize(aspect_ratio, image_width, sample_per_pixel);
     let image = camera.render(&world);
 
     // Create output file
