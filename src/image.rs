@@ -16,12 +16,6 @@ pub struct Color {
     pub b: u8,
 }
 
-impl Color {
-    fn blend(&self, other: &Color) -> Color {
-        (*self + *other) * 0.5
-    }
-}
-
 impl ops::Mul<f64> for Color {
     type Output = Color;
     fn mul(self, rhs: f64) -> Self::Output {
@@ -154,11 +148,29 @@ impl Camera {
         for j in 0..self.image_height {
             let mut row = Vec::with_capacity(self.image_width as usize);
             for i in 0..self.image_width {
-                let mut color = Color { r: 0, g: 0, b: 0 };
+                let mut sampled_colors: Vec<Color> =
+                    Vec::with_capacity(self.sample_per_pixel as usize);
                 for _ in 0..self.sample_per_pixel {
                     let ray = self.get_ray(j as usize, i as usize);
-                    color = color.blend(&Camera::ray_color(&ray, world))
+                    sampled_colors.push(Camera::ray_color(&ray, world));
                 }
+                let mut r: u16 = 0;
+                let mut g: u16 = 0;
+                let mut b: u16 = 0;
+                for color in &sampled_colors {
+                    r += color.r as u16;
+                    g += color.g as u16;
+                    b += color.b as u16;
+                }
+                r /= sampled_colors.len() as u16;
+                g /= sampled_colors.len() as u16;
+                b /= sampled_colors.len() as u16;
+                let color = Color {
+                    r: r as u8,
+                    g: g as u8,
+                    b: b as u8,
+                };
+
                 row.push(Pixel { color });
             }
             pixels.push(row);
