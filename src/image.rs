@@ -175,15 +175,14 @@ impl Camera {
             + (row as f64 + offset.y) * self.pixel_delta_v;
         let origin = self.center;
         let direction = pixel_sample - origin;
-
         Ray { origin, direction }
     }
 
-    // Returns the vector to a random point in the [-.5,-.5]-[+.5,+.5] unit square.
+    // Returns the vector to a random point in the [-.5,-.5];[+.5,+.5] unit square.
     fn sample_square() -> Vec3 {
         Vec3 {
             x: 0.,
-            y: rand::random::<f64>() - 0.5,
+            y: rand::random::<f64>() - 0.5, // rand::random::<f64> output is in [0;1[
             z: rand::random::<f64>() - 0.5,
         }
     }
