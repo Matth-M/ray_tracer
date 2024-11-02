@@ -144,11 +144,16 @@ pub struct HitRecord {
 
 impl HitRecord {
     fn is_hit_from_front(ray: &Ray, outward_normal: &Vec3) -> bool {
+        // If the normal and incoming ray's direction have a positive dot
+        // product, they go in the same general "direction" -> the ray is not
+        // goind inside the object
         ray.direction.dot(outward_normal) < 0.
     }
 }
 
 pub trait Hittable {
+    /// Returns a HitRecord if the ray hits an objects, not too far from its origin
+    /// -> with it's t (ray = origin + t * direction) inside the interval.
     fn hit(&self, ray: &Ray, interval: Interval) -> Option<HitRecord>;
 }
 
