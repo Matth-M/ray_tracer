@@ -86,10 +86,21 @@ impl Camera {
                 max: f64::INFINITY,
             },
         ) {
-            let r = (0.5 * (hit.normal.x + 1.0) * MAX_COLOR_CHANNEL_VALUE as f64) as u8;
-            let g = (0.5 * (hit.normal.y + 1.0) * MAX_COLOR_CHANNEL_VALUE as f64) as u8;
-            let b = (0.5 * (hit.normal.z + 1.0) * MAX_COLOR_CHANNEL_VALUE as f64) as u8;
-            Color { r, g, b }
+            let reflection_direction = Vec3::random_unit_vector();
+            // Chck if the reflection is in the same direction as the normal
+            // Otherwise, the reflection would be pointing inside the object.
+            if reflection_direction.dot(&hit.normal) >= 0. {
+                reflection_direction
+            } else {
+                -1.0 * reflection_direction
+            };
+            0.5 * Camera::ray_color(
+                &Ray {
+                    origin: hit.p,
+                    direction: reflection_direction,
+                },
+                world,
+            )
         } else {
             Ray::blue_lerp(ray)
         }

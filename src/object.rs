@@ -23,8 +23,17 @@ impl Vec3 {
         } / self.len()
     }
 
-    fn dot(&self, v: &Vec3) -> f64 {
+    pub fn dot(&self, v: &Vec3) -> f64 {
         self.x * v.x + self.y * v.y + self.z * v.z
+    }
+
+    pub fn random_unit_vector() -> Vec3 {
+        Vec3 {
+            x: rand::random::<f64>(),
+            y: rand::random::<f64>(),
+            z: rand::random::<f64>(),
+        }
+        .normalized()
     }
 }
 
@@ -127,7 +136,7 @@ impl Ray {
 
 #[derive(Debug, PartialEq)]
 pub struct HitRecord {
-    p: Point,
+    pub p: Point,
     pub normal: Vec3,
     t: f64,
     front_face: bool,
