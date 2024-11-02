@@ -16,6 +16,19 @@ pub struct Color {
     pub b: u8,
 }
 
+impl Color {
+    fn white() -> Color {
+        Color {
+            r: MAX_COLOR_CHANNEL_VALUE,
+            g: MAX_COLOR_CHANNEL_VALUE,
+            b: MAX_COLOR_CHANNEL_VALUE,
+        }
+    }
+    fn black() -> Color {
+        Color { r: 0, g: 0, b: 0 }
+    }
+}
+
 impl ops::Mul<f64> for Color {
     type Output = Color;
     fn mul(self, rhs: f64) -> Self::Output {
@@ -75,14 +88,23 @@ pub struct Camera {
     pixel_delta_v: Vec3,
     center: Point,
     sample_per_pixel: u32,
+    max_ray_bounces: u16,
 }
 
 impl Camera {
-    fn ray_color<T: Hittable>(ray: &Ray, world: &World<T>) -> Color {
+    fn ray_color<T: Hittable>(ray: &Ray, world: &World<T>, depth: u16) -> Color {
+        if depth <= 0 {
+            return Color::black();
+        }
         if let Some(hit) = world.hit(
             ray,
             Interval {
-                min: 0.,
+                // Because of floating rounding error, the origin of the reflected Ray might be
+                // just slightly off from where it's supposed to be. If the error puts the Ray
+                // origin inside the object, the reflected ray might detect a new hit from the
+                // inside of the object it just bounced off.  This is called shadow acne.
+                // To prevent this, discard hits that occur very close to the Ray origin.
+                min: 0.0001,
                 max: f64::INFINITY,
             },
         ) {
@@ -100,13 +122,19 @@ impl Camera {
                     direction: reflection_direction,
                 },
                 world,
+                depth - 1,
             )
         } else {
             Ray::blue_lerp(ray)
         }
     }
 
-    pub fn initialize(aspect_ratio: f64, image_width: u32, sample_per_pixel: u32) -> Camera {
+    pub fn initialize(
+        aspect_ratio: f64,
+        image_width: u32,
+        sample_per_pixel: u32,
+        max_ray_bounces: u16,
+    ) -> Camera {
         let image_height = (image_width as f64 / aspect_ratio) as u32;
         let image_height = if image_height < 1 { 1 } else { image_height };
 
@@ -150,6 +178,7 @@ impl Camera {
             pixel_delta_u,
             pixel_delta_v,
             center: camera_center,
+            max_ray_bounces,
         }
     }
 
@@ -163,7 +192,7 @@ impl Camera {
                     Vec::with_capacity(self.sample_per_pixel as usize);
                 for _ in 0..self.sample_per_pixel {
                     let ray = self.get_ray(j as usize, i as usize);
-                    sampled_colors.push(Camera::ray_color(&ray, world));
+                    sampled_colors.push(Camera::ray_color(&ray, world, self.max_ray_bounces));
                 }
                 let mut r: u16 = 0;
                 let mut g: u16 = 0;

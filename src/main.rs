@@ -33,7 +33,8 @@ fn main() {
     let aspect_ratio = 3.0 / 2.0;
     let image_width = 500;
     let sample_per_pixel = 10;
-    let camera = Camera::initialize(aspect_ratio, image_width, sample_per_pixel);
+    let max_ray_bounces = 50;
+    let camera = Camera::initialize(aspect_ratio, image_width, sample_per_pixel, max_ray_bounces);
     let image = camera.render(&world);
 
     // Create output file
