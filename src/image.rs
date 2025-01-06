@@ -8,6 +8,7 @@ pub const MAX_COLOR_CHANNEL_VALUE: u8 = 255;
 // P3 means the file contains a portable pixmap image written in ASCII
 // https://en.wikipedia.org/wiki/Netpbm#Description
 const PPM_MAGIC_NUMBER: &str = "P3";
+const MINIMUM_DISTANCE_AGAINST_SHADOW_ACNE: f64 = 0.0001;
 
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub struct Color {
@@ -26,6 +27,25 @@ impl Color {
     }
     fn black() -> Color {
         Color { r: 0, g: 0, b: 0 }
+    }
+
+    fn mean_color(colors: Vec<Color>) -> Color {
+        let mut r: u16 = 0;
+        let mut g: u16 = 0;
+        let mut b: u16 = 0;
+        for color in &colors {
+            r += color.r as u16;
+            g += color.g as u16;
+            b += color.b as u16;
+        }
+        r /= colors.len() as u16;
+        g /= colors.len() as u16;
+        b /= colors.len() as u16;
+        Color {
+            r: r as u8,
+            g: g as u8,
+            b: b as u8,
+        }
     }
 }
 
@@ -91,6 +111,7 @@ pub struct Camera {
     max_ray_bounces: u16,
 }
 
+
 impl Camera {
     fn ray_color<T: Hittable>(ray: &Ray, world: &World<T>, depth: u16) -> Color {
         if depth <= 0 {
@@ -104,7 +125,7 @@ impl Camera {
                 // origin inside the object, the reflected ray might detect a new hit from the
                 // inside of the object it just bounced off.  This is called shadow acne.
                 // To prevent this, discard hits that occur very close to the Ray origin.
-                min: 0.0001,
+                min: MINIMUM_DISTANCE_AGAINST_SHADOW_ACNE,
                 max: f64::INFINITY,
             },
         ) {
@@ -184,42 +205,33 @@ impl Camera {
 
     pub fn render<T: Hittable>(&self, world: &World<T>) -> Image {
         // Image content
-        let mut pixels = Vec::with_capacity(self.image_height as usize);
-        for j in 0..self.image_height {
-            let mut row = Vec::with_capacity(self.image_width as usize);
-            for i in 0..self.image_width {
+        let mut pixels_matrix = Vec::with_capacity(self.image_height as usize);
+        // Get the color of each pixel
+        // For each pixel, we're going to sample multiple colors
+        for row in 0..self.image_height {
+            let mut pixel_row: Vec<Pixel> = Vec::with_capacity(self.image_width as usize);
+            for col in 0..self.image_width {
                 let mut sampled_colors: Vec<Color> =
                     Vec::with_capacity(self.sample_per_pixel as usize);
                 for _ in 0..self.sample_per_pixel {
-                    let ray = self.get_ray(j as usize, i as usize);
+                    let ray = self.get_ray(row as usize, col as usize);
                     sampled_colors.push(Camera::ray_color(&ray, world, self.max_ray_bounces));
                 }
-                let mut r: u16 = 0;
-                let mut g: u16 = 0;
-                let mut b: u16 = 0;
-                for color in &sampled_colors {
-                    r += color.r as u16;
-                    g += color.g as u16;
-                    b += color.b as u16;
-                }
-                r /= sampled_colors.len() as u16;
-                g /= sampled_colors.len() as u16;
-                b /= sampled_colors.len() as u16;
-                let color = Color {
-                    r: r as u8,
-                    g: g as u8,
-                    b: b as u8,
-                };
 
-                row.push(Pixel { color });
+                pixel_row.push(Pixel {
+                    color: Color::mean_color(sampled_colors),
+                });
             }
-            pixels.push(row);
+            pixels_matrix.push(pixel_row);
         }
 
-        Image { pixels }
+        Image {
+            pixels: pixels_matrix,
+        }
     }
-    // Construct a camera ray originating from the origin and directed at randomly sampled
-    // point around the pixel location i, j.
+    /// Construct a camera ray originating from the origin and directed at randomly sampled
+    /// point around the pixel location row, column to prevent aliasing.
+    /// Sampling around a pixel will prevent the "stair" like on edges of objects.
     fn get_ray(&self, row: usize, column: usize) -> Ray {
         let offset = Camera::sample_square();
         let pixel_sample = self.pixel_00_loc
