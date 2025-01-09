@@ -164,15 +164,16 @@ pub struct Sphere {
 
 impl Hittable for Sphere {
     fn hit(&self, ray: &Ray, interval: Interval) -> Option<HitRecord> {
-        // Finds t for quadratic equation x(t)^2 + y(t)^2 + z(t)^2 - r^2 = 0
+        // Finds t for quadratic equation x(t)^2 + y(t)^2 + z(t)^2 - r^2 = 0,
+        // with:  ray = origin + t * direction
         // => t^2d.d - 2td.(C-Q) + (C-Q).(C-Q) - r^2 = 0
-        // with d: direction,
+        // with d: ray direction,
         // C: sphere center
         // r: sphere radius
         // Q: ray origin
         let qc = self.center - ray.origin; // ray origin to sphere center
         let a = ray.direction.dot(&ray.direction);
-        // h = b / -2
+        // h = b / -2, simplifies the equation of roots
         let h = ray.direction.dot(&qc);
         let c = qc.dot(&qc) - self.radius * self.radius;
         let discriminant = h * h - a * c;
@@ -193,6 +194,7 @@ impl Hittable for Sphere {
         let p = ray.at(root);
         let outward_normal = (p - self.center) / self.radius;
         let front_face = HitRecord::is_hit_from_front(ray, &outward_normal);
+        // Make normal point outward the surface
         let normal = if front_face {
             outward_normal
         } else {

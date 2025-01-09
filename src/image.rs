@@ -111,7 +111,6 @@ pub struct Camera {
     max_ray_bounces: u16,
 }
 
-
 impl Camera {
     fn ray_color<T: Hittable>(ray: &Ray, world: &World<T>, depth: u16) -> Color {
         if depth <= 0 {
@@ -129,6 +128,7 @@ impl Camera {
                 max: f64::INFINITY,
             },
         ) {
+            // Diffuse objects reflect light in random directions
             let reflection_direction = Vec3::random_unit_vector();
             // Chck if the reflection is in the same direction as the normal
             // Otherwise, the reflection would be pointing inside the object.
@@ -137,6 +137,7 @@ impl Camera {
             } else {
                 -1.0 * reflection_direction
             };
+            // Reflects 50% of light, object is grayish
             0.5 * Camera::ray_color(
                 &Ray {
                     origin: hit.p,
