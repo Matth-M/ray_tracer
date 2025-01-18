@@ -34,8 +34,9 @@ fn main() {
     let image_width = 500;
     let sample_per_pixel = 100;
     let max_ray_bounces = 50;
+    let gamma_corrected = false;
     let camera = Camera::initialize(aspect_ratio, image_width, sample_per_pixel, max_ray_bounces);
-    let image = camera.render(&world);
+    let image = camera.render(&world, gamma_corrected);
 
     // Create output file
     let path = Path::new("img.ppm");

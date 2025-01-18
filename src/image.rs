@@ -47,6 +47,23 @@ impl Color {
             b: b as u8,
         }
     }
+
+    /// Translate the color values from linear space to gamma space
+    fn gamma_corrected(self) -> Color {
+        Color {
+            r: gamma_correction(self.r),
+            g: gamma_correction(self.g),
+            b: gamma_correction(self.b),
+        }
+    }
+}
+
+fn gamma_correction(color: u8) -> u8 {
+    if color > 0 {
+        f64::sqrt(color as f64) as u8
+    } else {
+        color
+    }
 }
 
 impl ops::Mul<f64> for Color {
@@ -201,7 +218,7 @@ impl Camera {
         }
     }
 
-    pub fn render<T: Hittable>(&self, world: &World<T>) -> Image {
+    pub fn render<T: Hittable>(&self, world: &World<T>, gamma_corrected: bool) -> Image {
         // Image content
         let mut pixels_matrix = Vec::with_capacity(self.image_height as usize);
         // Get the color of each pixel
@@ -216,8 +233,14 @@ impl Camera {
                     sampled_colors.push(Camera::ray_color(&ray, world, self.max_ray_bounces));
                 }
 
-                pixel_row.push(Pixel {
-                    color: Color::mean_color(sampled_colors),
+                pixel_row.push(if gamma_corrected {
+                    Pixel {
+                        color: Color::mean_color(sampled_colors).gamma_corrected(),
+                    }
+                } else {
+                    Pixel {
+                        color: Color::mean_color(sampled_colors),
+                    }
                 });
             }
             pixels_matrix.push(pixel_row);
