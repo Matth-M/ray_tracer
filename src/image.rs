@@ -129,7 +129,8 @@ impl Camera {
             },
         ) {
             // Diffuse objects reflect light in random directions
-            let reflection_direction = Vec3::random_unit_vector();
+            // Adding normal so that reflections are in general closer to the normal
+            let reflection_direction = Vec3::random_unit_vector() + hit.normal;
             // Chck if the reflection is in the same direction as the normal
             // Otherwise, the reflection would be pointing inside the object.
             if reflection_direction.dot(&hit.normal) >= 0. {
