@@ -96,10 +96,6 @@ impl std::fmt::Display for Pixel {
     }
 }
 
-pub struct Image {
-    pixels: Vec<Vec<Pixel>>,
-}
-
 pub struct Camera {
     image_width: u32,
     image_height: u32,
@@ -252,6 +248,10 @@ impl Camera {
             z: rand::random::<f64>() - 0.5,
         }
     }
+}
+
+pub struct Image {
+    pixels: Vec<Vec<Pixel>>,
 }
 
 impl std::fmt::Display for Image {
