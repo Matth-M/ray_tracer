@@ -1,6 +1,6 @@
 use std::ops;
 
-use crate::object::{Hittable, Point, Ray, Vec3, World};
+use crate::object::{Hittable, Point, Ray, ScatteredRay, Vec3, World};
 use crate::utils::Interval;
 
 // Maximum value contained in an RGB channel
@@ -141,25 +141,9 @@ impl Camera {
                 max: f64::INFINITY,
             },
         ) {
-            // Diffuse objects reflect light in random directions
-            // Adding normal so that reflections are in general closer to the normal
-            let reflection_direction = Vec3::random_unit_vector() + hit.normal;
-            // Chck if the reflection is in the same direction as the normal
-            // Otherwise, the reflection would be pointing inside the object.
-            if reflection_direction.dot(&hit.normal) >= 0. {
-                reflection_direction
-            } else {
-                -1.0 * reflection_direction
-            };
-            // Reflects 50% of light, object is grayish
-            0.5 * Camera::ray_color(
-                &Ray {
-                    origin: hit.p,
-                    direction: reflection_direction,
-                },
-                world,
-                depth - 1,
-            )
+            // Get scattered ray based on the type of material that was hit
+            let scattered_ray = ScatteredRay::scatter(&hit);
+            scattered_ray.attenuation * Camera::ray_color(&scattered_ray.ray, world, depth - 1)
         } else {
             Ray::blue_lerp(ray)
         }

@@ -140,6 +140,7 @@ pub struct HitRecord {
     pub normal: Vec3,
     t: f64,
     front_face: bool,
+    material: Material,
 }
 
 impl HitRecord {
@@ -157,9 +158,54 @@ pub trait Hittable {
     fn hit(&self, ray: &Ray, interval: Interval) -> Option<HitRecord>;
 }
 
+pub struct ScatteredRay {
+    pub ray: Ray,
+    pub attenuation: Color,
+}
+
+impl ScatteredRay {
+    pub fn scatter(hit: &HitRecord) -> ScatteredRay {
+        let mut reflection_direction: Vec3;
+        match hit.material.material_type {
+            MaterialType::Lambertian => {
+                // Diffuse objects reflect light in random directions
+                // Adding normal so that reflections are in general closer to the normal
+                reflection_direction = Vec3::random_unit_vector() + hit.normal;
+            }
+        }
+        // Chck if the reflection is in the same direction as the normal
+        // Otherwise, the reflection would be pointing inside the object.
+        reflection_direction = if reflection_direction.dot(&hit.normal) >= 0. {
+            reflection_direction
+        } else {
+            -1.0 * reflection_direction
+        };
+        let scattered_ray = Ray {
+            origin: hit.p,
+            direction: reflection_direction,
+        };
+        ScatteredRay {
+            ray: scattered_ray,
+            attenuation: hit.material.albedo,
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct Material {
+    pub material_type: MaterialType,
+    pub albedo: Color,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum MaterialType {
+    Lambertian,
+}
+
 pub struct Sphere {
     pub center: Point,
     pub radius: f64,
+    pub material: Material,
 }
 
 impl Hittable for Sphere {
@@ -205,6 +251,7 @@ impl Hittable for Sphere {
             p,
             normal,
             front_face,
+            material: self.material.clone(),
         })
     }
 }

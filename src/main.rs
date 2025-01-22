@@ -2,12 +2,20 @@ use std::{fs::File, io::Write, path::Path, rc::Rc};
 
 mod image;
 mod utils;
-use image::Camera;
+use image::{Camera, Color, MAX_COLOR_CHANNEL_VALUE};
 
 mod object;
-use object::{Point, Sphere, World};
+use object::{Material, MaterialType, Point, Sphere, World};
 
 fn main() {
+    let material_ground = Material {
+        material_type: MaterialType::Lambertian,
+        albedo: Color {
+            r: (0.8 * MAX_COLOR_CHANNEL_VALUE as f64) as u8,
+            b: (0.8 * MAX_COLOR_CHANNEL_VALUE as f64) as u8,
+            g: (0.8 * MAX_COLOR_CHANNEL_VALUE as f64) as u8,
+        },
+    };
     let objects = vec![
         Rc::new(Sphere {
             center: Point {
@@ -16,6 +24,7 @@ fn main() {
                 z: 0.,
             },
             radius: 0.5,
+            material: material_ground.clone(),
         }),
         Rc::new(Sphere {
             center: Point {
@@ -24,6 +33,7 @@ fn main() {
                 z: 0.,
             },
             radius: 100.,
+            material: material_ground.clone(),
         }),
     ];
 
