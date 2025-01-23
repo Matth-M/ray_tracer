@@ -47,22 +47,24 @@ impl Color {
             b: b as u8,
         }
     }
+    fn channel_gamma_correction(color: u8) -> u8 {
+        if color > 0 {
+            f64::sqrt(color as f64) as u8
+        } else {
+            color
+        }
+    }
 
     /// Translate the color values from linear space to gamma space
     fn gamma_corrected(self) -> Color {
         Color {
-            r: gamma_correction(self.r),
-            g: gamma_correction(self.g),
-            b: gamma_correction(self.b),
+            r: Color::channel_gamma_correction(self.r),
+            g: Color::channel_gamma_correction(self.g),
+            b: Color::channel_gamma_correction(self.b),
         }
     }
 }
 
-fn gamma_correction(color: u8) -> u8 {
-    if color > 0 {
-        f64::sqrt(color as f64) as u8
-    } else {
-        color
     }
 }
 
