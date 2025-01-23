@@ -114,6 +114,16 @@ impl ops::Add<Color> for Color {
     }
 }
 
+impl ops::Mul<Color> for Color {
+    type Output = Color;
+    fn mul(self, rhs: Color) -> Self::Output {
+        let r = (self.r as f64 / MAX_COLOR_CHANNEL_VALUE as f64 * rhs.r as f64) as u8;
+        let g = (self.g as f64 / MAX_COLOR_CHANNEL_VALUE as f64 * rhs.g as f64) as u8;
+        let b = (self.b as f64 / MAX_COLOR_CHANNEL_VALUE as f64 * rhs.b as f64) as u8;
+        Color { r, g, b }
+    }
+}
+
 #[derive(Clone)]
 struct Pixel {
     color: Color,
@@ -412,6 +422,28 @@ mod tests {
                 r: 255,
                 g: 80,
                 b: 160,
+            }
+        );
+    }
+
+    #[test]
+    fn color_mul() {
+        let color1 = Color {
+            r: 100,
+            g: 100,
+            b: 100,
+        };
+        let color2 = Color {
+            r: 100,
+            g: 100,
+            b: 100,
+        };
+        assert_eq!(
+            color1 * color2,
+            Color {
+                r: 39,
+                g: 39,
+                b: 39
             }
         );
     }
