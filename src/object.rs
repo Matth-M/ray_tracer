@@ -35,6 +35,11 @@ impl Vec3 {
         }
         .normalized()
     }
+
+    fn near_zero(&self) -> bool {
+        let limit = 1e-8;
+        self.x < limit && self.y < limit && self.z < limit
+    }
 }
 
 impl ops::Mul<Vec3> for f64 {
@@ -171,6 +176,12 @@ impl ScatteredRay {
                 // Diffuse objects reflect light in random directions
                 // Adding normal so that reflections are in general closer to the normal
                 reflection_direction = Vec3::random_unit_vector() + hit.normal;
+                // If the random unit vector is opposite to the normal, the reflection is the null
+                // vector. To prevent troubles with this (NaN, Infinity ...) we use the normal
+                // as the reflection direction in case the vector is null.
+                if reflection_direction.near_zero() {
+                    reflection_direction = hit.normal;
+                }
             }
         }
         // Chck if the reflection is in the same direction as the normal
