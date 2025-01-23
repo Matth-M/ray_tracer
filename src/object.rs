@@ -140,7 +140,7 @@ pub struct HitRecord {
     pub normal: Vec3,
     t: f64,
     front_face: bool,
-    material: Material,
+    material: Rc<Material>,
 }
 
 impl HitRecord {
@@ -205,7 +205,7 @@ pub enum MaterialType {
 pub struct Sphere {
     pub center: Point,
     pub radius: f64,
-    pub material: Material,
+    pub material: Rc<Material>,
 }
 
 impl Hittable for Sphere {
@@ -312,6 +312,10 @@ mod tests {
 
     #[test]
     fn hit_sphere() {
+        let material_test = Rc::new(Material {
+            material_type: MaterialType::Lambertian,
+            albedo: Color::from([0.9, 0.9, 0.9]),
+        });
         let sphere = Sphere {
             radius: 1.0,
             center: Point {
@@ -319,6 +323,7 @@ mod tests {
                 y: 0.,
                 z: 0.,
             },
+            material: Rc::clone(&material_test),
         };
         let ray_should_hit = Ray {
             origin: Point {
@@ -347,6 +352,7 @@ mod tests {
                 },
                 t: 2.,
                 front_face: true,
+                material: Rc::clone(&material_test),
             })
         )
     }

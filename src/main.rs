@@ -8,7 +8,7 @@ mod object;
 use object::{Material, MaterialType, Point, Sphere, World};
 
 fn main() {
-    let material_ground = Material {
+    let material_ground = Rc::new(Material {
         material_type: MaterialType::Lambertian,
         albedo: Color::from([0.5, 0.5, 0.5]),
     });
@@ -21,7 +21,7 @@ fn main() {
                 z: 0.,
             },
             radius: 0.5,
-            material: material_ground.clone(),
+            material: Rc::clone(&material_ground),
         }),
         Rc::new(Sphere {
             center: Point {
@@ -30,7 +30,7 @@ fn main() {
                 z: 0.,
             },
             radius: 100.,
-            material: material_ground.clone(),
+            material: Rc::clone(&material_ground),
         }),
     ];
 
