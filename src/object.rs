@@ -170,30 +170,30 @@ pub struct ScatteredRay {
 
 impl ScatteredRay {
     pub fn scatter(hit: &HitRecord) -> ScatteredRay {
-        let mut reflection_direction: Vec3;
+        let mut scatter_direction: Vec3;
         match hit.material.material_type {
             MaterialType::Lambertian => {
                 // Diffuse objects reflect light in random directions
-                // Adding normal so that reflections are in general closer to the normal
-                reflection_direction = Vec3::random_unit_vector() + hit.normal;
-                // If the random unit vector is opposite to the normal, the reflection is the null
+                // Adding normal so that scatters are in general closer to the normal
+                scatter_direction = Vec3::random_unit_vector() + hit.normal;
+                // If the random unit vector is opposite to the normal, the scatter is the null
                 // vector. To prevent troubles with this (NaN, Infinity ...) we use the normal
-                // as the reflection direction in case the vector is null.
-                if reflection_direction.near_zero() {
-                    reflection_direction = hit.normal;
+                // as the scatter direction in case the vector is null.
+                if scatter_direction.near_zero() {
+                    scatter_direction = hit.normal;
                 }
             }
         }
-        // Chck if the reflection is in the same direction as the normal
-        // Otherwise, the reflection would be pointing inside the object.
-        reflection_direction = if reflection_direction.dot(&hit.normal) >= 0. {
-            reflection_direction
+        // Chck if the scatter is in the same direction as the normal
+        // Otherwise, the scatter would be pointing inside the object.
+        scatter_direction = if scatter_direction.dot(&hit.normal) >= 0. {
+            scatter_direction
         } else {
-            -1.0 * reflection_direction
+            -1.0 * scatter_direction
         };
         let scattered_ray = Ray {
             origin: hit.p,
-            direction: reflection_direction,
+            direction: scatter_direction,
         };
         ScatteredRay {
             ray: scattered_ray,
