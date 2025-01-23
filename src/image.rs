@@ -65,6 +65,17 @@ impl Color {
     }
 }
 
+impl From<[f64; 3]> for Color {
+    /// Accepts a triplet of floats in the interval [0,1].
+    /// Out of interval values will be clamped
+    fn from(value: [f64; 3]) -> Self {
+        let normalized = value.map(|v| v.clamp(0.0, 1.0));
+
+        Color {
+            r: (normalized[0] * MAX_COLOR_CHANNEL_VALUE as f64) as u8,
+            b: (normalized[1] * MAX_COLOR_CHANNEL_VALUE as f64) as u8,
+            g: (normalized[2] * MAX_COLOR_CHANNEL_VALUE as f64) as u8,
+        }
     }
 }
 
