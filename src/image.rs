@@ -258,7 +258,7 @@ impl Camera {
         }
     }
     /// Construct a camera ray originating from the origin and directed at randomly sampled
-    /// point around the pixel location row, column to prevent aliasing.
+    /// point around the pixel location (row, column) to prevent aliasing.
     /// Sampling around a pixel will prevent the "stair" like on edges of objects.
     fn get_ray(&self, row: usize, column: usize) -> Ray {
         let offset = Camera::sample_square();
