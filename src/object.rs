@@ -183,8 +183,11 @@ impl ScatteredRay {
                     scatter_direction = hit.normal;
                 }
             }
-            MaterialType::Metal => {
-                scatter_direction = incident_ray.direction - 2.0 * incident_ray.direction.dot(&hit.normal) * hit.normal;
+            MaterialType::Metal { fuzz } => {
+                scatter_direction = (incident_ray.direction
+                    - 2.0 * incident_ray.direction.dot(&hit.normal) * hit.normal)
+                    .normalized()
+                    + fuzz * Vec3::random_unit_vector();
             }
         }
         // Chck if the scatter is in the same direction as the normal
@@ -214,7 +217,7 @@ pub struct Material {
 #[derive(Clone, Debug, PartialEq)]
 pub enum MaterialType {
     Lambertian,
-    Metal,
+    Metal { fuzz: f64 },
 }
 
 pub struct Sphere {
