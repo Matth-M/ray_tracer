@@ -165,7 +165,7 @@ impl Camera {
             },
         ) {
             // Get scattered ray based on the type of material that was hit
-            let scattered_ray = ScatteredRay::scatter(&hit);
+            let scattered_ray = ScatteredRay::scatter(&hit, ray);
             scattered_ray.attenuation * Camera::ray_color(&scattered_ray.ray, world, depth - 1)
         } else {
             Ray::blue_lerp(ray)

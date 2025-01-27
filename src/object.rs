@@ -169,7 +169,7 @@ pub struct ScatteredRay {
 }
 
 impl ScatteredRay {
-    pub fn scatter(hit: &HitRecord) -> ScatteredRay {
+    pub fn scatter(hit: &HitRecord, incident_ray: &Ray) -> ScatteredRay {
         let mut scatter_direction: Vec3;
         match hit.material.material_type {
             MaterialType::Lambertian => {
@@ -182,6 +182,9 @@ impl ScatteredRay {
                 if scatter_direction.near_zero() {
                     scatter_direction = hit.normal;
                 }
+            }
+            MaterialType::Metal => {
+                scatter_direction = incident_ray.direction - 2.0 * incident_ray.direction.dot(&hit.normal) * hit.normal;
             }
         }
         // Chck if the scatter is in the same direction as the normal
@@ -211,6 +214,7 @@ pub struct Material {
 #[derive(Clone, Debug, PartialEq)]
 pub enum MaterialType {
     Lambertian,
+    Metal,
 }
 
 pub struct Sphere {
