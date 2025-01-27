@@ -266,7 +266,7 @@ impl Hittable for Sphere {
             p,
             normal,
             front_face,
-            material: self.material.clone(),
+            material: Rc::clone(&self.material),
         })
     }
 }
