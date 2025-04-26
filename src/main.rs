@@ -76,15 +76,6 @@ fn main() {
     let image = camera.render(&world, gamma_corrected);
 
     // Create output file
-    let path = Path::new("img.ppm");
-    let display = path.display();
-    let mut file = match File::create(path) {
-        Err(why) => panic!("couldn't create {}: {}", display, why),
-        Ok(file) => file,
-    };
-
-    // Write image to file
-    if let Err(why) = file.write_all(image.to_string().as_bytes()) {
-        panic!("couldn't write to {}: {}", display, why)
-    }
+    let path = Path::new("img.png");
+    image.save(path).expect("Could'nt save image.");
 }

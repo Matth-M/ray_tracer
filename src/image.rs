@@ -1,5 +1,7 @@
 use std::ops;
 
+use image::{Rgb, RgbImage};
+
 use crate::object::{Hittable, Point, Ray, ScatteredRay, Vec3, World};
 use crate::utils::Interval;
 
@@ -124,6 +126,12 @@ impl ops::Mul<Color> for Color {
     }
 }
 
+impl Into<Rgb<u8>> for Color {
+    fn into(self) -> Rgb<u8> {
+        Rgb::from([self.r, self.g, self.b])
+    }
+}
+
 #[derive(Clone)]
 struct Pixel {
     color: Color,
@@ -225,38 +233,32 @@ impl Camera {
         }
     }
 
-    pub fn render<T: Hittable>(&self, world: &World<T>, gamma_corrected: bool) -> Image {
+    pub fn render<T: Hittable>(&self, world: &World<T>, gamma_corrected: bool) -> RgbImage {
         // Image content
-        let mut pixels_matrix = Vec::with_capacity(self.image_height as usize);
+        let mut img = RgbImage::new(self.image_width, self.image_height);
         // Get the color of each pixel
         // For each pixel, we're going to sample multiple colors
-        for row in 0..self.image_height {
-            let mut pixel_row: Vec<Pixel> = Vec::with_capacity(self.image_width as usize);
-            for col in 0..self.image_width {
+        for y in 0..self.image_height {
+            for x in 0..self.image_width {
                 let mut sampled_colors: Vec<Color> =
                     Vec::with_capacity(self.sample_per_pixel as usize);
                 for _ in 0..self.sample_per_pixel {
-                    let ray = self.get_ray(row as usize, col as usize);
+                    let ray = self.get_ray(y as usize, x as usize);
                     sampled_colors.push(Camera::ray_color(&ray, world, self.max_ray_bounces));
                 }
 
-                pixel_row.push(if gamma_corrected {
-                    Pixel {
-                        color: Color::mean_color(sampled_colors).gamma_corrected(),
-                    }
+                let color = if gamma_corrected {
+                    Color::mean_color(sampled_colors).gamma_corrected()
                 } else {
-                    Pixel {
-                        color: Color::mean_color(sampled_colors),
-                    }
-                });
+                    Color::mean_color(sampled_colors)
+                };
+                img.put_pixel(x, y, color.into());
             }
-            pixels_matrix.push(pixel_row);
         }
 
-        Image {
-            pixels: pixels_matrix,
-        }
+        img
     }
+
     /// Construct a camera ray originating from the origin and directed at randomly sampled
     /// point around the pixel location (row, column) to prevent aliasing.
     /// Sampling around a pixel will prevent the "stair" like on edges of objects.
