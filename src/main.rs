@@ -17,11 +17,11 @@ fn main() {
         albedo: Color::from([0.1, 0.2, 0.5]),
     });
     let material_left = Rc::new(Material {
-        material_type: MaterialType::Metal{fuzz: 1.0},
+        material_type: MaterialType::Metal { fuzz: 1.0 },
         albedo: Color::from([0.8, 0.8, 0.8]),
     });
     let material_right = Rc::new(Material {
-        material_type: MaterialType::Metal{fuzz: 0.1},
+        material_type: MaterialType::Metal { fuzz: 0.1 },
         albedo: Color::from([0.8, 0.6, 0.2]),
     });
 
