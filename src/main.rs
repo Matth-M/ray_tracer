@@ -77,5 +77,5 @@ fn main() {
 
     // Create output file
     let path = Path::new("img.png");
-    image.save(path).expect("Could'nt save image.");
+    image.save(path).expect("Couldn't save image.");
 }
