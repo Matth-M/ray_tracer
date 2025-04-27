@@ -1,6 +1,5 @@
-Following [Ray tracing in a weekend tutorial](https://raytracing.github.io/books/RayTracingInOneWeekend.html).
+Inspired by [Ray tracing in a weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html) guide.
 
-# Run
 [Install rust](https://www.rust-lang.org/tools/install)
 
 ```bash
