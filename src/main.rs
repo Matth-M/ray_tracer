@@ -1,11 +1,11 @@
-use std::{fs::File, io::Write, path::Path, rc::Rc};
+use std::path::Path;
 
 mod image;
 mod utils;
-use image::{Camera, Color};
+use image::Camera;
 
 mod object;
-use object::{Material, MaterialType, Point, Sphere, World};
+use object::{Sphere, World};
 
 fn main() {
     let objects = World::<Sphere>::three_close_spheres();
