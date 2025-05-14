@@ -279,10 +279,6 @@ pub struct World<T: Hittable> {
 }
 
 impl<T: Hittable> World<T> {
-    pub fn add(&mut self, object: Rc<T>) {
-        self.objects.push(object);
-    }
-
     pub fn hit(&self, ray: &Ray, mut interval: Interval) -> Option<HitRecord> {
         let mut closest_hit: Option<HitRecord> = None;
 
