@@ -126,9 +126,9 @@ impl ops::Mul<Color> for Color {
     }
 }
 
-impl Into<Rgb<u8>> for Color {
-    fn into(self) -> Rgb<u8> {
-        Rgb::from([self.r, self.g, self.b])
+impl From<Color> for Rgb<u8> {
+    fn from(val: Color) -> Self {
+        Rgb::from([val.r, val.g, val.b])
     }
 }
 
@@ -157,7 +157,7 @@ pub struct Camera {
 
 impl Camera {
     fn ray_color<T: Hittable>(ray: &Ray, world: &World<T>, depth: u16) -> Color {
-        if depth <= 0 {
+        if depth == 0 {
             return Color::black();
         }
         if let Some(hit) = world.hit(
