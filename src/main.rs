@@ -5,10 +5,10 @@ mod utils;
 use image::Camera;
 
 mod object;
-use object::{Sphere, World};
+use object::World;
 
 fn main() {
-    let objects = World::<Sphere>::three_close_spheres();
+    let objects = World::three_close_spheres();
     let world = World { objects };
 
     // camera

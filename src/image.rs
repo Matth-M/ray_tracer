@@ -2,7 +2,7 @@ use std::ops;
 
 use image::{Rgb, RgbImage};
 
-use crate::object::{Hittable, Point, Ray, ScatteredRay, Vec3, World};
+use crate::object::{Point, Ray, ScatteredRay, Vec3, World};
 use crate::utils::Interval;
 
 // Maximum value contained in an RGB channel
@@ -156,7 +156,7 @@ pub struct Camera {
 }
 
 impl Camera {
-    fn ray_color<T: Hittable>(ray: &Ray, world: &World<T>, depth: u16) -> Color {
+    fn ray_color(ray: &Ray, world: &World, depth: u16) -> Color {
         if depth == 0 {
             return Color::black();
         }
@@ -233,7 +233,7 @@ impl Camera {
         }
     }
 
-    pub fn render<T: Hittable>(&self, world: &World<T>, gamma_corrected: bool) -> RgbImage {
+    pub fn render(&self, world: &World, gamma_corrected: bool) -> RgbImage {
         // Image content
         let mut img = RgbImage::new(self.image_width, self.image_height);
         // Get the color of each pixel
