@@ -156,11 +156,62 @@ impl HitRecord {
         ray.direction.dot(outward_normal) < 0.
     }
 }
+pub enum Hittable {
+    Sphere(Sphere),
+}
 
-pub trait Hittable {
-    /// Returns a HitRecord if the ray hits an objects, not too far from its origin
-    /// -> with it's t (ray = origin + t * direction) inside the interval.
-    fn hit(&self, ray: &Ray, interval: Interval) -> Option<HitRecord>;
+impl Hittable {
+    fn hit(&self, ray: &Ray, interval: Interval) -> Option<HitRecord> {
+        match self {
+            Hittable::Sphere(sphere) => Hittable::hit_sphere(sphere, ray, interval),
+        }
+    }
+
+    fn hit_sphere(sphere: &Sphere, ray: &Ray, interval: Interval) -> Option<HitRecord> {
+        // Finds t for quadratic equation x(t)^2 + y(t)^2 + z(t)^2 - r^2 = 0,
+        // with:  ray = origin + t * direction
+        // => t^2d.d - 2td.(C-Q) + (C-Q).(C-Q) - r^2 = 0
+        // with d: ray direction,
+        // C: sphere center
+        // r: sphere radius
+        // Q: ray origin
+        let qc = sphere.center - ray.origin; // ray origin to sphere center
+        let a = ray.direction.dot(&ray.direction);
+        // h = b / -2, simplifies the equation of roots
+        let h = ray.direction.dot(&qc);
+        let c = qc.dot(&qc) - sphere.radius * sphere.radius;
+        let discriminant = h * h - a * c;
+        if discriminant < 0. {
+            return None;
+        }
+
+        let discriminant_sqrt = discriminant.sqrt();
+
+        let mut root = (h - discriminant_sqrt) / a;
+        if !interval.contains(root) {
+            root = (h + discriminant_sqrt) / a;
+            if !interval.contains(root) {
+                return None;
+            }
+        }
+        let t = root;
+        let p = ray.at(root);
+        let outward_normal = (p - sphere.center) / sphere.radius;
+        let front_face = HitRecord::is_hit_from_front(ray, &outward_normal);
+        // Make normal point outward the surface
+        let normal = if front_face {
+            outward_normal
+        } else {
+            -1.0 * outward_normal
+        };
+        Some(HitRecord {
+            t,
+            p,
+            normal,
+            front_face,
+            material: Rc::clone(&sphere.material),
+        })
+    }
 }
 
 pub struct ScatteredRay {
@@ -226,59 +277,11 @@ pub struct Sphere {
     pub material: Rc<Material>,
 }
 
-impl Hittable for Sphere {
-    fn hit(&self, ray: &Ray, interval: Interval) -> Option<HitRecord> {
-        // Finds t for quadratic equation x(t)^2 + y(t)^2 + z(t)^2 - r^2 = 0,
-        // with:  ray = origin + t * direction
-        // => t^2d.d - 2td.(C-Q) + (C-Q).(C-Q) - r^2 = 0
-        // with d: ray direction,
-        // C: sphere center
-        // r: sphere radius
-        // Q: ray origin
-        let qc = self.center - ray.origin; // ray origin to sphere center
-        let a = ray.direction.dot(&ray.direction);
-        // h = b / -2, simplifies the equation of roots
-        let h = ray.direction.dot(&qc);
-        let c = qc.dot(&qc) - self.radius * self.radius;
-        let discriminant = h * h - a * c;
-        if discriminant < 0. {
-            return None;
-        }
-
-        let discriminant_sqrt = discriminant.sqrt();
-
-        let mut root = (h - discriminant_sqrt) / a;
-        if !interval.contains(root) {
-            root = (h + discriminant_sqrt) / a;
-            if !interval.contains(root) {
-                return None;
-            }
-        }
-        let t = root;
-        let p = ray.at(root);
-        let outward_normal = (p - self.center) / self.radius;
-        let front_face = HitRecord::is_hit_from_front(ray, &outward_normal);
-        // Make normal point outward the surface
-        let normal = if front_face {
-            outward_normal
-        } else {
-            -1.0 * outward_normal
-        };
-        Some(HitRecord {
-            t,
-            p,
-            normal,
-            front_face,
-            material: Rc::clone(&self.material),
-        })
-    }
+pub struct World {
+    pub objects: Vec<Rc<Hittable>>,
 }
 
-pub struct World<T: Hittable> {
-    pub objects: Vec<Rc<T>>,
-}
-
-impl<T: Hittable> World<T> {
+impl World {
     pub fn hit(&self, ray: &Ray, mut interval: Interval) -> Option<HitRecord> {
         let mut closest_hit: Option<HitRecord> = None;
 
@@ -292,7 +295,7 @@ impl<T: Hittable> World<T> {
         closest_hit
     }
 
-    pub fn three_close_spheres() -> Vec<Rc<Sphere>> {
+    pub fn three_close_spheres() -> Vec<Rc<Hittable>> {
         let material_ground = Rc::new(Material {
             material_type: MaterialType::Lambertian,
             albedo: Color::from([0.5, 0.5, 0.5]),
@@ -311,7 +314,7 @@ impl<T: Hittable> World<T> {
         });
 
         vec![
-            Rc::new(Sphere {
+            Rc::new(Hittable::Sphere(Sphere {
                 center: Point {
                     x: 0.,
                     y: -100.5,
@@ -319,8 +322,8 @@ impl<T: Hittable> World<T> {
                 },
                 radius: 100.,
                 material: Rc::clone(&material_ground),
-            }),
-            Rc::new(Sphere {
+            })),
+            Rc::new(Hittable::Sphere(Sphere {
                 center: Point {
                     x: 1.2,
                     y: 0.,
@@ -328,8 +331,8 @@ impl<T: Hittable> World<T> {
                 },
                 radius: 0.5,
                 material: Rc::clone(&material_center),
-            }),
-            Rc::new(Sphere {
+            })),
+            Rc::new(Hittable::Sphere(Sphere {
                 center: Point {
                     x: 1.2,
                     y: 0.,
@@ -337,8 +340,8 @@ impl<T: Hittable> World<T> {
                 },
                 radius: 0.5,
                 material: Rc::clone(&material_left),
-            }),
-            Rc::new(Sphere {
+            })),
+            Rc::new(Hittable::Sphere(Sphere {
                 center: Point {
                     x: 1.2,
                     y: 0.,
@@ -346,7 +349,7 @@ impl<T: Hittable> World<T> {
                 },
                 radius: 0.5,
                 material: Rc::clone(&material_right),
-            }),
+            })),
         ]
     }
 }
@@ -410,7 +413,11 @@ mod tests {
             },
         };
         assert_eq!(
-            sphere.hit(&ray_should_hit, Interval { min: 0., max: 100. }),
+            Hittable::hit(
+                &Hittable::Sphere(sphere),
+                &ray_should_hit,
+                Interval { min: 0., max: 100. }
+            ),
             Some(HitRecord {
                 p: Vec3 {
                     x: 2.,
