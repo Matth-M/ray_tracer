@@ -17,7 +17,7 @@ fn main() {
     let sample_per_pixel = 100;
     let max_ray_bounces = 50;
     let gamma_corrected = false;
-    let camera = Camera::initialize(aspect_ratio, image_width, sample_per_pixel, max_ray_bounces);
+    let camera = Camera::init(aspect_ratio, image_width, sample_per_pixel, max_ray_bounces);
     let image = camera.render(&world, gamma_corrected);
 
     // Create output file

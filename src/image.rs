@@ -180,7 +180,7 @@ impl Camera {
         }
     }
 
-    pub fn initialize(
+    pub fn init(
         aspect_ratio: f64,
         image_width: u32,
         sample_per_pixel: u32,
