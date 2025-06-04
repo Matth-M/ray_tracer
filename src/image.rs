@@ -9,7 +9,6 @@ use crate::utils::Interval;
 pub const MAX_COLOR_CHANNEL_VALUE: u8 = 255;
 // P3 means the file contains a portable pixmap image written in ASCII
 // https://en.wikipedia.org/wiki/Netpbm#Description
-const PPM_MAGIC_NUMBER: &str = "P3";
 const MINIMUM_DISTANCE_AGAINST_SHADOW_ACNE: f64 = 0.0001;
 
 #[derive(Clone, Copy, PartialEq, Debug)]
