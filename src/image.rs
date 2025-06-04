@@ -132,18 +132,6 @@ impl From<Color> for Rgb<u8> {
     }
 }
 
-#[derive(Clone)]
-struct Pixel {
-    color: Color,
-}
-
-impl std::fmt::Display for Pixel {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let color = &self.color;
-        write!(f, "{:3} {:3} {:3}", color.r, color.g, color.b)
-    }
-}
-
 pub struct Camera {
     image_width: u32,
     image_height: u32,
@@ -282,26 +270,6 @@ impl Camera {
     }
 }
 
-pub struct Image {
-    pixels: Vec<Vec<Pixel>>,
-}
-
-impl std::fmt::Display for Image {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let rows = self.pixels.len();
-        let columns = self.pixels[0].len();
-        let mut content =
-            format!("{PPM_MAGIC_NUMBER}\n{columns} {rows}\n{MAX_COLOR_CHANNEL_VALUE}\n");
-        for row in &self.pixels {
-            let mut row_str = String::new();
-            for pixel in row {
-                row_str.push_str(format!("{pixel} ").as_str())
-            }
-            content.push_str(format!("{row_str} \n").as_str())
-        }
-        write!(f, "{}", content)
-    }
-}
 
 #[allow(dead_code)]
 fn example_img() -> Image {
