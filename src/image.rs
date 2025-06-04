@@ -20,13 +20,6 @@ pub struct Color {
 }
 
 impl Color {
-    fn white() -> Color {
-        Color {
-            r: MAX_COLOR_CHANNEL_VALUE,
-            g: MAX_COLOR_CHANNEL_VALUE,
-            b: MAX_COLOR_CHANNEL_VALUE,
-        }
-    }
     fn black() -> Color {
         Color { r: 0, g: 0, b: 0 }
     }
@@ -270,61 +263,6 @@ impl Camera {
     }
 }
 
-
-#[allow(dead_code)]
-fn example_img() -> Image {
-    let row1 = [
-        Pixel {
-            color: Color { r: 255, g: 0, b: 0 },
-        },
-        Pixel {
-            color: Color { r: 0, g: 255, b: 0 },
-        },
-        Pixel {
-            color: Color { r: 0, g: 0, b: 255 },
-        },
-    ]
-    .to_vec();
-    let row2 = [
-        Pixel {
-            color: Color {
-                r: 255,
-                g: 255,
-                b: 0,
-            },
-        },
-        Pixel {
-            color: Color {
-                r: 255,
-                g: 255,
-                b: 255,
-            },
-        },
-        Pixel {
-            color: Color { r: 0, g: 0, b: 0 },
-        },
-    ]
-    .to_vec();
-    let img_content = [row1, row2].to_vec();
-    Image {
-        pixels: img_content,
-    }
-}
-
-#[allow(dead_code)]
-fn single_color_img(color: Color) -> Image {
-    let image_height = 400;
-    let image_width = 600;
-    let mut pixels = Vec::with_capacity(image_height as usize);
-    for _ in 0..image_height {
-        let mut row = Vec::with_capacity(image_width as usize);
-        for _ in 0..image_width {
-            row.push(Pixel { color });
-        }
-        pixels.push(row);
-    }
-    Image { pixels }
-}
 
 #[cfg(test)]
 mod tests {
